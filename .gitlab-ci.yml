@@ -1,0 +1,18 @@
+# https://www.pages.zjusct.io/posts/git-pages-builder/
+
+pages:
+  tags:
+    - pages-builder
+  stage: deploy
+  script:
+    # 移除 ZJU Git 不支持的插件
+    - sed -i '/zjugit-remove/,$d' mkdocs.yml
+    - dummy
+  variables:
+    BUILDER: 'mkdocs'
+    WORKING_DIR: ''
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
