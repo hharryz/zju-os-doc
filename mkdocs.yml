@@ -114,10 +114,13 @@ plugins:
   - drawio
   - tags
   - search
+  - timetoread
   - include_dir_to_nav:
       recurse: false
   - git-revision-date-localized:
       enable_creation_date: true
+      type: timeago
+      locale: zh
   # 该插件本地编辑时关闭，CI 时自动开启
   # 该行及以下的内容在 ZJU Git 流水线中自动删除
   - git-committers:

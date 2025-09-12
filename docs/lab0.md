@@ -67,7 +67,7 @@ git merge upstream/<new-lab>
 - ++ctrl+d++ 退出并关闭容器，此时你在容器内的更改会被保存，下次 `make` 进入容器时可以继续使用
 - 如果你不小心搞坏了容器内的环境，运行 `make clean` 来删除容器，重新 `make` 运行一个新的容器
 
-```text
+```console
 $ make
 docker compose create
 docker compose start
@@ -101,7 +101,7 @@ gcc gdb objdump readelf as ...
 
 它们对应的交叉编译工具带有格式为 `<目标架构>-<系统>-<套件名>-` 的前缀。比如 Linux 系统上用于交叉编译 RISC-V 64 架构的 GNU 工具前缀为 `riscv64-linux-gnu-`，使用方式与原版相同。以 GCC 为例：
 
-```text
+```console
 root@zju-os-code /z/code# riscv64-linux-gnu-gcc hello.c -o hello
 root@zju-os-code /z/code# file hello
 hello: ELF 64-bit LSB pie executable, UCB RISC-V, RVC, double-float ABI, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-riscv64-lp64d.so.1, BuildID[sha1]=963fa6ea0ba96c8e9b928927d0e0306355e326d5, for GNU/Linux 4.15.0, not stripped
@@ -123,14 +123,14 @@ hello: ELF 64-bit LSB pie executable, UCB RISC-V, RVC, double-float ABI, version
 
 容器内的 `/zju-os/linux-source-*` 是预先放置好的 Linux 内核源码：
 
-```text
+```console
 root@zju-os /zju-os# ls
 code/  linux-source-6.16/
 ```
 
 在容器中编译内核的基本命令如下：
 
-```text
+```console
 root@zju-os /zju-os# cd linux-source-6.16
 root@zju-os /z/linux-source-6.16# make defconfig
 root@zju-os /z/linux-source-6.16# make -j$(nproc)
@@ -168,7 +168,7 @@ root@zju-os /z/linux-source-6.16# make distclean
 
 如果看到 `Kernel: arch/riscv/boot/Image is ready` 这一行，说明成功构建出了 RISC-V 架构的内核。使用 `file` 命令来验证它是否为 RISC-V 架构的内核：
 
-```text
+```console
 root@zju-os /z/linux-source-6.16# file arch/riscv/boot/Image
 arch/riscv/boot/Image: Linux kernel RISC-V boot executable Image, little-endian
 root@zju-os /z/linux-source-6.16# file vmlinux
@@ -179,7 +179,7 @@ vmlinux: ELF 64-bit LSB executable, UCB RISC-V, RVC, soft-float ABI, version 1 (
 
 回到代码仓库，使用 `make qemu` 启动 QEMU 运行构建好的内核：
 
-```text
+```console
 root@zju-os /zju-os/code# make qemu
 ...
 Welcome to Buildroot
@@ -188,7 +188,7 @@ buildroot login:
 
 buildroot 默认用户为 `root`，密码为空。你可以登录 Shell，试试这个极简的 RISC-V 系统能干些什么（它应该能联网）：
 
-```text
+```console
 buildroot login: root
 # pwd
 /root
@@ -308,7 +308,22 @@ Domain0 Next Mode           : S-mode
 - 在容器内使用 [tmux](https://github.com/tmux/tmux) 等终端复用工具。可参考 [Tmux 使用教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2019/10/tmux.html) 或 [Home · tmux/tmux Wiki](https://github.com/tmux/tmux/wiki)。
 - 在宿主机上打开两个终端窗口，均执行 `make` 进入容器。
 
-在其中一个终端运行 `make qemu-debug`，你会看到 QEMU 命令执行后就停住了。在另一个终端运行 `make gdb`
+在其中一个终端运行 `make qemu-debug`，会看到 QEMU 命令执行后就停住了。在另一个终端运行 `make gdb`，GDB 自动连接到 QEMU 上，但因为什么命令都没执行，GDB 显示的内容全空：
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│                    [ No Source Available ]                  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│                    [ No Assembly Available ]                │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+remote Thread 1.1 (src) In:                     L??   PC: 0x1000
+(gdb)
+```
 
 接下来，请你任选资料阅读：
 
