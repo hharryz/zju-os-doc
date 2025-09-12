@@ -6,8 +6,6 @@
 
 ## 实验简介
 
-欢迎来到《操作系统》课程实验。按照培养方案，你已经完成了《数字逻辑设计》《计算机组成》《计算机体系结构》等硬件课程的学习，了解了 RISC-V 指令集架构和计算机系统的基本组成。现在，我们将进入软件部分，动手实现一个运行在 RISC-V 架构下的简易操作系统内核。
-
 在 Lab 0 中，我们将学习下列内容，完成环境搭建：
 
 - **使用 Git 管理源代码：**为了方便助教查看同学们的代码修改，本教学班统一使用 [ZJU Git](https://git.zju.edu.cn/) 进行代码管理。请同学们注册 ZJU Git 账号，使用指定的仓库进行实验、提交代码。
@@ -15,11 +13,6 @@
 - **使用 QEMU 模拟器：**同学们使用的一般是 x86-64 或 Arm 架构的设备，而本课程实现的内核使用 RISC-V 汇编指令和 C 语言编写。我们将使用 [QEMU](https://www.qemu.org/)、[Spike](https://github.com/riscv-software-src/riscv-isa-sim) 等虚拟机、模拟器来模拟 RISC-V 架构的计算机系统，由它们提供对应的 CPU、内存、外设等环境，供我们运行和调试内核。
 - **使用交叉编译工具链**：特定架构上的编译器等工具一般只生成对应架构的二进制文件，生成其他架构的二进制文件的过程称为交叉编译。[RISC-V GNU Compiler Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain) 支持在 x86-64 或 Arm 架构的机器上编译、调试 RISC-V 架构的程序。
 - **使用 GDB 调试器：**在内核开发过程中，调试是必不可少的环节。我们将使用 [GDB](https://www.gnu.org/software/gdb/) 来调试内核代码，定位和修复问题。
-
-接下来的实验默认同学们：
-
-- 拥有 Linux/macOS 环境，具备 Linux 基础操作能力
-- 了解 Git、Makefile 的基本用法
 
 ## 实验要求
 
@@ -53,12 +46,20 @@ git fetch upstream
 git merge upstream/<new-lab>
 ```
 
+其中 `git merge` 步骤可能遇到冲突。你需要理解冲突部分的代码的作用，并决定保留、合并或是手动整理代码。
+
+我们推荐使用 VSCode 内置的 Git 面板进行相关操作。此外，你还可以安装 [Git Graph](https://marketplace.visualstudio.com/items?itemName=mhutchie.git-graph) 插件来可视化地查看分支、提交等信息。
+
+!!! info "更多资料"
+
+    - Pro Git 是一本优秀的 Git 教程：英文版 [Git](https://git-scm.com/book/en/)、中文版 [Pro Git 中文版（第二版）](https://www.progit.cn/)
+
 ### 使用 Docker 容器
 
 如果你尚未安装 Docker：
 
 - Linux 和 WSL 环境请参考 [Docker CE | ZJU Mirror](https://mirrors.zju.edu.cn/docs/docker-ce/)
-- macOS 推荐使用 Docker Desktop，也可以用 Homebrew 安装
+- macOS 推荐使用 [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/)，也可以用 [Homebrew 安装](https://formulae.brew.sh/formula/docker)
 
 实验代码库根目录下的 `Makefile` 将相关 Docker 命令封装成了 Makefile 目标。你可以：
 
@@ -85,14 +86,38 @@ root@zju-os /zju-os#
 !!! info "更多资料"
 
     - 如果你不了解 Docker：[What is a Container? | Docker](https://www.docker.com/resources/what-container)
-    - `Dockerfile` 描述了容器镜像是如何构建的：[Dockerfile reference | Docker Docs](https://docs.docker.com/reference/dockerfile/)
     - `compose.yml` 描述了容器的运行参数：[Compose file reference | Docker Docs](https://docs.docker.com/reference/compose-file/)
+    - `Dockerfile` 描述了容器镜像是如何构建的：[Dockerfile reference | Docker Docs](https://docs.docker.com/reference/dockerfile/)
+    - 本课程的 `Dockerfile`：[tool/container/Dockerfile at main · ZJU-OS/tool](https://github.com/ZJU-OS/tool/blob/main/container/Dockerfile)
     - 容器内默认使用 `fish`，这是一个比 `bash` 更友好的 shell，提供开箱即用的历史纪录、自动补全显示等功能：[fish shell](https://fishshell.com/)
 
-### 使用交叉工具链
+### 使用交叉编译工具链
 
+也许你接触过下列编译器工具：
 
+```text
+gcc gdb objdump readelf as ...
+```
 
+它们对应的交叉编译工具带有格式为 `<目标架构>-<系统>-<套件名>-` 的前缀。比如 Linux 系统上用于交叉编译 RISC-V 64 架构的 GNU 工具前缀为 `riscv64-linux-gnu-`，使用方式与原版相同。以 GCC 为例：
+
+```text
+root@zju-os-code /z/code# riscv64-linux-gnu-gcc hello.c -o hello
+root@zju-os-code /z/code# file hello
+hello: ELF 64-bit LSB pie executable, UCB RISC-V, RVC, double-float ABI, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-riscv64-lp64d.so.1, BuildID[sha1]=963fa6ea0ba96c8e9b928927d0e0306355e326d5, for GNU/Linux 4.15.0, not stripped
+```
+
+!!! question "考点"
+
+    用 C 写一个 Hello World 程序：
+
+    - 生成它的 RISC-V 汇编代码
+    - 将其编译为 RISC-V 可执行程序
+    - 将 RISC-V 可执行程序反汇编
+
+!!! info "更多资料"
+
+    - GNU 二进制工具文档，介绍了实验中会用到的相关工具：[Binutils - GNU Project - Free Software Foundation](https://www.gnu.org/software/binutils/)
 
 ### 编译内核
 
@@ -110,6 +135,9 @@ root@zju-os /zju-os# cd linux-source-6.16
 root@zju-os /z/linux-source-6.16# make defconfig
 root@zju-os /z/linux-source-6.16# make -j$(nproc)
   ...
+  LD      vmlinux
+  NM      System.map
+  ...
   BUILD   arch/x86/boot/bzImage
 Kernel: arch/x86/boot/bzImage is ready  (#1)
 root@zju-os /z/linux-source-6.16# make distclean
@@ -119,15 +147,15 @@ root@zju-os /z/linux-source-6.16# make distclean
 
 !!! question "考点"
 
-    请你运行 `make help`，了解上面运行的 `defconfig`、`distclean` 等 target 的含义。此外：
-
-    - 如何开启构建过程的详细输出？当构建失败时，你很可能需要查看详细的编译命令。
+    - 运行 `make help`，了解上面运行的 `defconfig`、`distclean` 等 target 的含义
+    - 如何开启构建过程的详细输出？当构建失败时，你很可能需要查看详细的编译命令
+    - `Image` 和 `vmlinux` 是什么？有什么异同？
 
 !!! info "更多资料"
 
     - 内核发行说明：[kernel.org/doc/Documentation/admin-guide/README.rst](https://www.kernel.org/doc/Documentation/admin-guide/README.rst)
     - Debian 发行版内核手册：[Chapter 4. Common kernel-related tasks](https://www.debian.org/doc/manuals/debian-kernel-handbook/ch-common-tasks.html)
-    - Linux 内核的构建系统十分复杂：[Linux Kernel Makefiles — The Linux Kernel documentation](https://docs.kernel.org/kbuild/makefiles.html)
+    - Linux 内核的构建系统十分复杂，如果你有兴趣了解：[Linux Kernel Makefiles — The Linux Kernel documentation](https://docs.kernel.org/kbuild/makefiles.html)
 
 ### 交叉编译内核
 
@@ -140,7 +168,7 @@ root@zju-os /z/linux-source-6.16# make distclean
 
 如果看到 `Kernel: arch/riscv/boot/Image is ready` 这一行，说明成功构建出了 RISC-V 架构的内核。使用 `file` 命令来验证它是否为 RISC-V 架构的内核：
 
-```shell
+```text
 root@zju-os /z/linux-source-6.16# file arch/riscv/boot/Image
 arch/riscv/boot/Image: Linux kernel RISC-V boot executable Image, little-endian
 root@zju-os /z/linux-source-6.16# file vmlinux
@@ -149,36 +177,138 @@ vmlinux: ELF 64-bit LSB executable, UCB RISC-V, RVC, soft-float ABI, version 1 (
 
 ### 使用 QEMU 运行内核
 
-回到代码仓库，使用下面的命令启动 QEMU 运行构建好的内核，你应当能在其中运行一些简单的命令：
+回到代码仓库，使用 `make qemu` 启动 QEMU 运行构建好的内核：
 
-```shell
+```text
 root@zju-os /zju-os/code# make qemu
+...
+Welcome to Buildroot
+buildroot login:
 ```
 
-退出 QEMU 的方法为：使用 <kbd>Ctrl+A</kbd>（mac 上为 <kbd>control+A</kbd>），**松开**后再按下 <kbd>X</kbd> 键即可退出 QEMU。
+buildroot 默认用户为 `root`，密码为空。你可以登录 Shell，试试这个极简的 RISC-V 系统能干些什么（它应该能联网）：
+
+```text
+buildroot login: root
+# pwd
+/root
+# uname -a
+Linux buildroot 6.16.3 #1 SMP Fri Sep 12 03:45:12 UTC 2025 riscv64 GNU/Linux
+# wget http://www.baidu.com
+Connecting to www.baidu.com (223.109.82.16:80)
+saving to 'index.html'
+index.html           100% |********************************|  2381  0:00:00 ETA
+'index.html' saved
+```
+
+接下来学习 QEMU 操作：
+
+- 现在与你交互的是 [QEMU 自带的终端复用器（Terminal Multiplexer）](https://www.qemu.org/docs/master/system/mux-chardev.html)
+    - 它连接着 QEMU Monitor 和虚拟机的控制台（Console），默认情况下连接后者。
+    - ++ctrl+a++ ++c++ 可以在两者间切换。
+    - ++ctrl+a++ ++h++ 可以查看帮助。
+    - ++ctrl+a++ ++x++ 可以退出 QEMU。
+- [QEMU Monitor](https://qemu-project.gitlab.io/qemu/system/monitor.html) 可以控制、查看、调试虚拟机。
+
+    它与下文介绍的 GDB 各有所长：QEMU Monitor 可以查看内存映射、TLB 等各类系统信息，而 GDB 专注于程序调试，主要是查看和控制代码运行。在后续实验中，如果你的代码有问题，可能导致 GDB 无法调试，而 QEMU Monitor 仍然可以使用。
+
+    你可以在 Monitor 中运行 `help` 查看支持的命令。
+
+    ```text
+    QEMU 10.1.0 monitor - type 'help' for more information
+    (qemu) help
+    ...
+    x /fmt addr -- virtual memory dump starting at 'addr'
+    (qemu) info mem
+    vaddr            paddr            size             attr
+    ---------------- ---------------- ---------------- -------
+    000055556ae09000 0000000081055000 0000000000001000 r-xu-a-
+    (qemu) info registers
+
+    CPU#0
+    V      =   0
+    pc       ffffffff80b57780
+    mhartid  0000000000000000
+    mstatus  0000000a000000a0
+    hstatus  0000000200000000
+    ```
+
+!!! question "考点"
+
+    使用 QEMU Monitor 进行下列操作：
+
+    - 查看寄存器、内存树、内存映射、TLB、设备树、物理内存中的值
+    - Linux 第一条指令位于物理内存 `0x80200000`，打印这条指令
 
 !!! tip
 
-    仅有一个内核镜像是无法启动 Linux 的，你还需要一个根文件系统（root filesystem），其中包含了 Linux 启动后需要的各种文件和命令，包括与你交互的 Shell 程序。仓库根目录下的 `rootfs.img` 就是一个已经构建好的根文件系统镜像。
+    仅有一个内核镜像是无法运行系统的，你还需要一个根文件系统（root filesystem），其中包含了 Linux 启动后需要的各种文件，例如执行你输入的指令的 Shell 程序。容器内预置的 `/zju-os/rootfs.ext2` 就是一个已经构建好的根文件系统镜像。
 
 !!! info "更多资料"
 
-    - QEMU 命令行各个选项的作用：[QEMU User Documentation — QEMU documentation](https://www.qemu.org/docs/master/system/qemu-manpage.html)
-    - 实验使用的 `rootfs.img` 制作方法：[FOSDEM 2019 - Buildroot for RISC-V](https://archive.fosdem.org/2019/schedule/event/riscvbuildroot/attachments/slides/3040/export/events/attachments/riscvbuildroot/slides/3040/FOSDEM_2019_Buildroot_RISCV.pdf)
+    - QEMU System 手册：[QEMU User Documentation — QEMU documentation](https://www.qemu.org/docs/master/system/qemu-manpage.html)
+    - QEMU Monitor 手册：[QEMU Monitor Commands — QEMU documentation](https://www.qemu.org/docs/master/system/monitor.html)
+    - `rootfs.ext2` 制作方法：[FOSDEM 2019 - Buildroot for RISC-V](https://archive.fosdem.org/2019/schedule/event/riscvbuildroot/attachments/slides/3040/export/events/attachments/riscvbuildroot/slides/3040/FOSDEM_2019_Buildroot_RISCV.pdf)
 
-### 系统启动过程
+### QEMU 启动过程
+
+对应到[OS 实验导读](intro.md)提及的 RISC-V 软件栈：
+
+- **QEMU** 提供模拟的 RISC-V [**硬件环境**（CPU、内存、外设等）](https://www.qemu.org/docs/master/system/riscv/virt.html)
+- **OpenSBI** 内置在 QEMU 中，作为 RISC-V 架构的**默认固件**，它运行在 **RISC-V M-Mode**
+- 因为系统简单没有引导程序，固件直接启动内核，内核运行在 **RISC-V S-Mode**
+
+整体流程如下图所示：
+
+<figure markdown="span">
+    ![boot.webp](lab0.assets/boot.webp)
+    <figcaption>
+    [OpenSBI Deep Dive - RISC-V International](https://riscv.org/wp-content/uploads/2024/12/13.30-RISCV_OpenSBI_Deep_Dive_v5.pdf)
+    </figcaption>
+</figure>
+
+让我们结合输出信息来看
+
+```text
+...
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+Firmware Base               : 0x80000000
+Domain0 Next Address        : 0x0000000080200000
+Domain0 Next Arg1           : 0x0000000087e00000
+Domain0 Next Mode           : S-mode
+...
+[    0.000000] Booting Linux on hartid 0
+[    0.000000] Linux version 6.16.3 (root@zju-os-code) (riscv64-linux-gnu-gcc (Debian 15.2.0-3) 15.2.0, GNU ld (GNU Binutils for Debian) 2.45) #1 SMP Fri Sep 12 03:45:12 UTC 2025
+```
+
+- QEMU 作为 Loader
+    - 将 OpenSBI 加载到内存中的 `0x80000000`
+    - 将 Linux 内核加载到内存中的 `0x80200000`
+- QEMU 内置的 OpenSBI 使用 `FW_DYNAMIC` 模式
+    - QEMU 将 `next_addr` 等信息放在 `struct fw_dynamic_info` 结构体中，将该结构体的地址存放在 `a2` 寄存器中
+    - OpenSBI 读取该信息，了解下一步要怎么做
+- `Booting Linux on hartid 0` 是内核 [`start_kernel()`](https://github.com/torvalds/linux/blob/master/init/main.c#L903) 打印出的第一条日志
+
+!!! info "更多信息"
+
+    - QEMU RISC-V 启动实现：[qemu/hw/riscv/boot.c at master · qemu/qemu](https://github.com/qemu/qemu/blob/master/hw/riscv/boot.c)
+    - OpenSBI 详解：[OpenSBI Deep Dive - RISC-V International](https://riscv.org/wp-content/uploads/2024/12/13.30-RISCV_OpenSBI_Deep_Dive_v5.pdf)
 
 ### GDB 调试内核
 
-现在需要打开两个终端，一个运行 QEMU，另一个运行 GDB 进行调试。你有几种方案：
+现在需要打开两个终端，一个运行 QEMU，另一个运行 GDB 进行调试。你可以：
 
 - 在容器内使用 [tmux](https://github.com/tmux/tmux) 等终端复用工具。可参考 [Tmux 使用教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2019/10/tmux.html) 或 [Home · tmux/tmux Wiki](https://github.com/tmux/tmux/wiki)。
 - 在宿主机上打开两个终端窗口，均执行 `make` 进入容器。
 
-分别在两个终端运行 `make qemu-debug` 和 `make gdb`，你会看到 QEMU 启动后停在了第一条指令处：
-
-```text
-```
+在其中一个终端运行 `make qemu-debug`，你会看到 QEMU 命令执行后就停住了。在另一个终端运行 `make gdb`
 
 接下来，请你任选资料阅读：
 
@@ -190,7 +320,7 @@ root@zju-os /zju-os/code# make qemu
 了解下列命令的含义，并进行实操：
 
 ```text
-layout asm
+layout [Name]
 start [Arguments]
 break [Function Name]
 break *[Address]
@@ -205,16 +335,24 @@ x /[Length][Format] [Address expression]
 quit
 ```
 
-一些信息：
-
-- Linux 内核启动的函数名为 `start_kernel`，你可以在该函数处打断点。
-
 !!! question "考点"
 
-    - 使用 GDB 显示
+    阅读 `Makefile` 和 `gdbinit`：
+
+    - `make qemu` 和 `make qemu-debug` 有什么不同？
+    - 你运行 `make gdb` 时，脚本对 GDB 做了哪些设置？
+
+    使用 GDB 进行下列操作：
+
     - **断点：**设置断点、查看断点、删除断点
     - **调试：**单指令执行、逐过程执行、结束当前函数、继续执行
     - **查看：**汇编代码、函数调用栈、变量、寄存器值、内存中的内容
+    - **分屏：**如何在汇编代码和交互命令行窗格之间切换
+
+    上一节我们了解了启动的详细过程，要求你使用 GDB 进一步了解：
+
+    - 在 OpenSBI 的起始处打断点，看看这时候 `a2` 寄存器的值是多少；进一步，查看对应内存位置的值
+    - 在内核起始处打断点，看看这时候 Next Arg1 处的内存存放了什么内容
 
 !!! info "更多资料"
 

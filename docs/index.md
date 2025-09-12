@@ -19,9 +19,9 @@
 | ---- | ---- |
 | 23 秋冬 | 开始建设课程文档 [TonyCrane/os23fall-stu](https://github.com/TonyCrane/os23fall-stu) |
 | 24 秋冬 | 教学班统一课程文档 [ZJU-SEC/os24fall-stu](https://github.com/ZJU-SEC/os24fall-stu) |
-| 25 秋冬 | 开课教师变更，各教学班自建文档<br>季江民、王海帅：[os](https://git.zju.edu.cn/os/)<br>寿黎但：[zju-os-sld/os-25fall](https://git.zju.edu.cn/zju-os-sld/os-25fall) |
+| 25 秋冬 | 开课教师变更，各教学班自建文档<br>季江民、王海帅：[ZJU-OS/doc](https://github.com/ZJU-OS/doc)<br>寿黎但：[zju-os-sld/os-25fall](https://git.zju.edu.cn/zju-os-sld/os-25fall) |
 
-25 年秋冬学期，季江明、王海帅老师授课的班级向 [《编译原理》课程实验](https://git.zju.edu.cn/compiler) 看齐，相比之前的版本主要有以下改动：
+25 年秋冬学期，本教学班向 [《编译原理》课程实验](https://git.zju.edu.cn/compiler) 看齐，相比之前的版本、其他教学班主要有以下改动：
 
 - 拆分课程文档和代码仓库
 - 学生统一使用 ZJU Git 上分配的仓库进行实验

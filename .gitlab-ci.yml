@@ -7,7 +7,6 @@ pages:
   script:
     # 移除 ZJU Git 不支持的插件
     - sed -i '/git-committers/,$d' mkdocs.yml
-    - dummy
   variables:
     BUILDER: 'mkdocs'
     WORKING_DIR: ''
