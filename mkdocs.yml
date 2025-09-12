@@ -114,13 +114,13 @@ plugins:
   - drawio
   - tags
   - search
-  # zjugit-remove 该行及以下的插件将在 ZJU Git 流水线中移除
+  - include_dir_to_nav:
+      recurse: false
   - git-revision-date-localized:
       enable_creation_date: true
   # 该插件本地编辑时关闭，CI 时自动开启
+  # 该行及以下的内容在 ZJU Git 流水线中自动删除
   - git-committers:
       enabled: false
       repository: zju-os/doc
       branch: main
-  - include_dir_to_nav:
-      recurse: false
