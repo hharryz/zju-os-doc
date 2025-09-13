@@ -2,13 +2,12 @@
 
 !!! danger "DDL"
 
-    本实验文档尚未正式发布。
+    暂定第二周(2025-09-23)
 
 ## 实验简介
 
 在 Lab 0 中，我们将学习下列内容，完成环境搭建：
 
-- **使用 Git 管理源代码：**为了方便助教查看同学们的代码修改，本教学班统一使用 [ZJU Git](https://git.zju.edu.cn/) 进行代码管理。请同学们注册 ZJU Git 账号，使用指定的仓库进行实验、提交代码。
 - **使用 Docker 容器：**为了避免同学们在不同操作系统和环境下遇到各种各样的问题，我们将实验环境打包成 [Docker](https://www.docker.com/) 容器镜像，免去同学们自行搭建环境的麻烦。
 - **使用 QEMU 模拟器：**同学们使用的一般是 x86-64 或 Arm 架构的设备，而本课程实现的内核使用 RISC-V 汇编指令和 C 语言编写。我们将使用 [QEMU](https://www.qemu.org/)、[Spike](https://github.com/riscv-software-src/riscv-isa-sim) 等虚拟机、模拟器来模拟 RISC-V 架构的计算机系统，由它们提供对应的 CPU、内存、外设等环境，供我们运行和调试内核。
 - **使用交叉编译工具链**：特定架构上的编译器等工具一般只生成对应架构的二进制文件，生成其他架构的二进制文件的过程称为交叉编译。[RISC-V GNU Compiler Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain) 支持在 x86-64 或 Arm 架构的机器上编译、调试 RISC-V 架构的程序。
@@ -28,31 +27,7 @@
 
 ## 实验步骤
 
-### 使用 Git 管理源代码
-
-你需要先在 ZJU Git 上注册账号。如果你没有使用过 ZJU Git，请参考 [ZJU Git 101](https://www.pages.zjusct.io/git101/)。
-
-我们在 ZJU Git 上为每个同学创建了私有的代码仓库。实验过程将涉及 Git 的进阶用法，下图展示了完整的工作流和相应命令：
-
-![git.drawio](lab0.assets/git.drawio)
-
-```bash
-git clone git@zju.edu.cn:os/2025/jijiangming/<你的学号>.git
-git remote add upstream https://git.zju.edu.cn/os/code.git
-git commit
-git push
-git checkout -b <new-lab>
-git fetch upstream
-git merge upstream/<new-lab>
-```
-
-其中 `git merge` 步骤可能遇到冲突。你需要理解冲突部分的代码的作用，并决定保留、合并或是手动整理代码。
-
-我们推荐使用 VSCode 内置的 Git 面板进行相关操作。此外，你还可以安装 [Git Graph](https://marketplace.visualstudio.com/items?itemName=mhutchie.git-graph) 插件来可视化地查看分支、提交等信息。
-
-!!! info "更多资料"
-
-    - Pro Git 是一本优秀的 Git 教程：英文版 [Git](https://git-scm.com/book/en/)、中文版 [Pro Git 中文版（第二版）](https://www.progit.cn/)
+在 [OS 实验导读](intro.md) 中，你应该已经把仓库克隆到本地了。
 
 ### 使用 Docker 容器
 
@@ -119,6 +94,7 @@ hello: ELF 64-bit LSB pie executable, UCB RISC-V, RVC, double-float ABI, version
 !!! info "更多资料"
 
     - GNU 二进制工具文档，介绍了实验中会用到的相关工具：[Binutils - GNU Project - Free Software Foundation](https://www.gnu.org/software/binutils/)
+    - [Coreutils - GNU core utilities](https://www.gnu.org/software/coreutils/)
 
 ### 编译内核
 
@@ -253,11 +229,33 @@ index.html           100% |********************************|  2381  0:00:00 ETA
 
 ### QEMU 启动过程
 
-对应到[OS 实验导读](intro.md)提及的 RISC-V 软件栈：
+当你按下电脑的电源键，计算机开始按照下面的流程启动：
+
+1. **固件加载（Firmware）**
+
+    - 在主板 ROM 中烧录的固件（如 BIOS 或 UEFI）会首先被加载到内存中执行。
+    - 固件会完成 **硬件自检**（Power-On Self Test，POST），检测 CPU、内存、外设等是否可用，并进行基础初始化。
+    - 接着，它会寻找合适的启动设备（如硬盘、U 盘、网络等），然后将 **引导程序**（Bootloader）加载到内存并执行。
+
+2. **引导程序（Bootloader）阶段**
+
+    该阶段不是必要的，固件可以直接引导进入内核。如果有多个操作系统，则引导程序可以提供选择界面。
+
+    - 引导程序的任务是把系统带入可以运行内核的状态。
+    - 典型的引导程序如 **GRUB** 或 **U-Boot** 会加载内核镜像（Kernel Image）和 **根文件系统**（Root File System）。
+    - 加载完成后，控制权会被转交给内核，开始执行内核入口点的代码。
+
+3. **内核启动（Kernel Boot）**
+
+    - 内核会初始化内存管理、设备驱动、进程调度等核心功能。
+    - 初始化完成后，内核会启动 **第一个用户空间进程**（通常是 `/sbin/init` 或 `systemd`），进一步完成系统服务和登录界面的启动。
+    - 最终，用户可以登录系统，进入正常的操作环境。
+
+具体到本课程：
 
 - **QEMU** 提供模拟的 RISC-V [**硬件环境**（CPU、内存、外设等）](https://www.qemu.org/docs/master/system/riscv/virt.html)
 - **OpenSBI** 内置在 QEMU 中，作为 RISC-V 架构的**默认固件**，它运行在 **RISC-V M-Mode**
-- 因为系统简单没有引导程序，固件直接启动内核，内核运行在 **RISC-V S-Mode**
+- 因为系统简单没有引导程序，固件直接启动内核，**内核**运行在 **RISC-V S-Mode**
 
 整体流程如下图所示：
 

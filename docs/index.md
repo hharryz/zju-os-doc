@@ -37,3 +37,4 @@
 
 - [编译原理课程实验](https://git.zju.edu.cn/compiler)
 - [编译原理助教工具](https://github.com/ZJU-CP/tools)
+- [操作系统：设计与实现 (2024 春季学期)](https://jyywiki.cn/OS/2024/)
