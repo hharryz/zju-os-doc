@@ -59,7 +59,7 @@ git merge upstream/<new-lab>
 如果你尚未安装 Docker：
 
 - Linux 和 WSL 环境请参考 [Docker CE | ZJU Mirror](https://mirrors.zju.edu.cn/docs/docker-ce/)
-- macOS 推荐使用 [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/)，也可以用 [Homebrew 安装](https://formulae.brew.sh/formula/docker)
+- macOS 推荐使用 [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) 或 [OrbStack](https://orbstack.dev/download) (可以用 [Homebrew](https://formulae.brew.sh/formula/docker) 直接安装)
 
 实验代码库根目录下的 `Makefile` 将相关 Docker 命令封装成了 Makefile 目标。你可以：
 
@@ -90,6 +90,7 @@ root@zju-os /zju-os#
     - `Dockerfile` 描述了容器镜像是如何构建的：[Dockerfile reference | Docker Docs](https://docs.docker.com/reference/dockerfile/)
     - 本课程的 `Dockerfile`：[tool/container/Dockerfile at main · ZJU-OS/tool](https://github.com/ZJU-OS/tool/blob/main/container/Dockerfile)
     - 容器内默认使用 `fish`，这是一个比 `bash` 更友好的 shell，提供开箱即用的历史纪录、自动补全显示等功能：[fish shell](https://fishshell.com/)
+    - 如果未来你有进入 Docker 容器调试、使用其他工作目录的需求，可以在 VSCode 中使用：[Dev Containers 插件](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
 ### 使用交叉编译工具链
 
@@ -349,6 +350,17 @@ print [Expression]
 x /[Length][Format] [Address expression]
 quit
 ```
+
+!!! tip "关于 gdb 脚本"
+
+    当你运行 `make gdb` 启动调试时，它会首先执行 `gdbinit` 脚本，进行一些初始化设置，这避免了我们每次手动输入一些重复的命令。如果你想尝试更加“现代”的 gdb 调试，现在的 gdb 为我们提供了 [Python API](https://sourceware.org/gdb/current/onlinedocs/gdb.html/Python-API.html)，我们可以更加方便地实现事件回调、调试状态访问、自定义打印等功能，也可以借助 Python 生态实现更丰富的自动化流程。未来的内核调试可能越来越复杂，你可以积极探索更多更好的调试方式。
+
+    在代码仓库中，你可以选择使用 `gdbinit.py` 替代 `gdbinit` 脚本：
+    ```diff title="(diff) Makefile" linenums="33"
+      gdb:
+    !     gdb-multiarch -x gdbinit.py $(KERNEL_PATH)/vmlinux  <- gdbinit 改为 gdbinit.py
+    ```
+
 
 !!! question "考点"
 
