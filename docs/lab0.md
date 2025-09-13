@@ -1,8 +1,10 @@
 # Lab 0: Linux 内核调试
 
-!!! danger "DDL"
+!!! tip "请先阅读 [OS 实验导读](intro.md)"
 
-    暂定第二周(2025-09-23)
+!!! danger "代码、报告提交 DDL"
+
+    （仅验收）暂定第三周(2025-09-30)
 
 ## 实验简介
 
@@ -51,12 +53,10 @@ docker compose start
 docker compose exec -it zju-os /usr/bin/fish
 Welcome to fish, the friendly interactive shell
 Type help for instructions on how to use fish
-root@zju-os /zju-os#
+root@zju-os /zju-os/code#
 ```
 
-!!! tip
-
-    代码库会被挂载到容器内的 `/zju-os/code` 目录下。**这意味着宿主机和容器共享代码库的文件，容器内对代码的修改会直接反映到宿主机上，反之亦然。**文件保存在宿主机，所以不会因为容器被删除而丢失。
+**代码库会被挂载到容器内的 `/zju-os/code` 目录下。**这意味着宿主机和容器共享代码库的文件，容器内对代码的修改会直接反映到宿主机上，反之亦然。文件保存在宿主机，所以不会因为容器被删除而丢失。
 
 !!! info "更多资料"
 
@@ -105,7 +105,7 @@ root@zju-os /zju-os# ls
 code/  linux-source-6.16/
 ```
 
-在容器中编译内核的基本命令如下：
+在容器中编译内核的基本流程如下：
 
 ```console
 root@zju-os /zju-os# cd linux-source-6.16
@@ -143,7 +143,7 @@ root@zju-os /z/linux-source-6.16# make distclean
     - 使用哪两个变量来指定目标架构？这两个变量的值在哪里找？
     - 如何在命令行中为 `make` 指定变量的值？
 
-如果看到 `Kernel: arch/riscv/boot/Image is ready` 这一行，说明成功构建出了 RISC-V 架构的内核。使用 `file` 命令来验证它是否为 RISC-V 架构的内核：
+请你使用交叉编译工具链编译 RISC-V 架构的内核。如果看到 `Kernel: arch/riscv/boot/Image is ready` 这一行，说明成功构建出了 RISC-V 架构的内核。使用 `file` 命令来验证它是否为 RISC-V 架构的内核：
 
 ```console
 root@zju-os /z/linux-source-6.16# file arch/riscv/boot/Image
@@ -154,10 +154,10 @@ vmlinux: ELF 64-bit LSB executable, UCB RISC-V, RVC, soft-float ABI, version 1 (
 
 ### 使用 QEMU 运行内核
 
-回到代码仓库，使用 `make qemu` 启动 QEMU 运行构建好的内核：
+回到代码仓库，使用 `make run` 启动 QEMU，运行构建好的内核：
 
 ```console
-root@zju-os /zju-os/code# make qemu
+root@zju-os /zju-os/code# make run
 ...
 Welcome to Buildroot
 buildroot login:
@@ -353,18 +353,18 @@ quit
 
     当你运行 `make gdb` 启动调试时，它会首先执行 `gdbinit` 脚本，进行一些初始化设置，这避免了我们每次手动输入一些重复的命令。如果你想尝试更加“现代”的 gdb 调试，现在的 gdb 为我们提供了 [Python API](https://sourceware.org/gdb/current/onlinedocs/gdb.html/Python-API.html)，我们可以更加方便地实现事件回调、调试状态访问、自定义打印等功能，也可以借助 Python 生态实现更丰富的自动化流程。未来的内核调试可能越来越复杂，你可以积极探索更多更好的调试方式。
 
-    在代码仓库中，你可以选择使用 `gdbinit.py` 替代 `gdbinit` 脚本：
-    ```diff title="(diff) Makefile" linenums="33"
-      gdb:
-    !     gdb-multiarch -x gdbinit.py $(KERNEL_PATH)/vmlinux  <- gdbinit 改为 gdbinit.py
-    ```
+    在代码仓库中，你可以通过修改 `GDB_INIT_SCRIPT` 变量选择使用 `gdbinit.py` 替代 `gdbinit` 脚本：
 
+    ```makefile title="Makefile"
+    # GDB_INIT_SCRIPT := gdbinit
+    GDB_INIT_SCRIPT := gdbinit.py
+    ```
 
 !!! question "考点"
 
     阅读 `Makefile` 和 `gdbinit`：
 
-    - `make qemu` 和 `make qemu-debug` 有什么不同？
+    - `make run` 和 `make debug` 有什么不同？新增的选项含义是什么？
     - 你运行 `make gdb` 时，脚本对 GDB 做了哪些设置？
 
     使用 GDB 进行下列操作：

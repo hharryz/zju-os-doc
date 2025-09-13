@@ -93,6 +93,10 @@ markdown_extensions:
   - pymdownx.keys
   # Highlight
   - pymdownx.critic
+  # 时间轴、甘特图
+  - neoteroi.timeline
+  - neoteroi.projects
+
 
 extra_javascript:
   # MathJax
@@ -108,6 +112,7 @@ extra_javascript:
 extra_css:
   - stylesheets/fonts.css
   - stylesheets/counter.css
+  - stylesheets/neoteroi-v1.1.2.css
 
 plugins:
   - glightbox
