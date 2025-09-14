@@ -7,6 +7,16 @@ repo_url: https://github.com/ZJU-OS/doc
 repo_name: ZJU-OS/doc
 edit_uri: blob/main/docs/
 
+nav:
+  - 首页: index.md
+  - 实验文档:
+    - intro.md
+    - faq.md
+    - lab0.md
+    - z1-spike.md
+  - 助教文档:
+    - ta.md
+
 theme:
   name: material
   palette:

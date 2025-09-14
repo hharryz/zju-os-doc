@@ -104,11 +104,10 @@ git merge upstream/<new-lab>
 
 请注意仓库的分支策略：
 
-- **助教仓库：**
-    - `main` 分支：持续开发，你可以向这个分支提交 bug 修复
-    - `lab0`、`lab1`、... 分支：当 `main` 分支的开发进度足够完成下一个 Lab 时，我们会创建并冻结相应的分支，代表该 Lab 发布，不会再有变更
-- **学生仓库：**
-    - `lab0`、`lab1`、... 分支：这些分支设置了保护策略，DDL 截止后无法再向对应分支提交代码，成绩评定以对应分支的代码为准
+- **发布仓库：** `git@github.com:ZJU-OS/code.git`
+    - `lab0`、`lab1`、... 分支：各个 Lab 的代码，位于同一个[线性历史（linear history）](https://stackoverflow.com/questions/20348629/what-are-the-advantages-of-keeping-linear-history-in-git)上
+- **学生仓库：** `git.zju.edu.cn:os/2025/jijiangming/<你的学号>.git`
+    - `lab0`、`lab1`、... 分支：学生提交的代码这些分支设置了保护策略，DDL 截止后无法再向对应分支提交代码，成绩评定以对应分支的代码为准
     - `lab0-makeup`、`lab1-makeup`、... 分支：补交分支，DDL 截止后你可以继续向这些分支提交代码，助教会在期末进行统一评定
 
 !!! info "更多资料"

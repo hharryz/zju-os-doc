@@ -45,6 +45,7 @@
 - 运行 `make` 创建并启动容器
 - ++ctrl+d++ 退出并关闭容器，此时你在容器内的更改会被保存，下次 `make` 进入容器时可以继续使用
 - 如果你不小心搞坏了容器内的环境，运行 `make clean` 来删除容器，重新 `make` 运行一个新的容器
+- 如果课程群有通知容器更新，请执行 `make update` 来拉取最新的镜像，注意它会先执行 `make clean` 删除旧容器
 
 ```console
 $ make
@@ -57,6 +58,10 @@ Welcome to fish, the friendly interactive shell
 Type help for instructions on how to use fish
 root@zju-os /zju-os/code#
 ```
+
+!!! tip
+
+    将 Docker 命令封装为 Makefile 目标仅仅是为了让常用操作更简便，不用打一长串命令。建议你自行学习 Makefile 中的命令含义，以便日后遇到问题时知道该怎么做。
 
 **代码库会被挂载到容器内的 `/zju-os/code` 目录下。**这意味着宿主机和容器共享代码库的文件，容器内对代码的修改会直接反映到宿主机上，反之亦然。文件保存在宿主机，所以不会因为容器被删除而丢失。
 
