@@ -42,8 +42,12 @@
 
     ```shell
     git checkout fa25-release
+    # 以当前工作目录为基础，比较 main 分支新增哪些代码
+    git diff -R --compact-summary main --
+    # 从主干分支合并代码，可以用 git merge 或 git checkout
     git merge --squash --no-commit private/main
     # 此时添加了 private/main 中的完整更改，但即使没有冲突也不会提交
+    git checkout private/main -- <需要的文件>
     # 手工选择需要合并的文件，挖空学生完成的代码
     # 可以分多次提交，更加清晰地添加文件
     git commit -am "labN: release"
