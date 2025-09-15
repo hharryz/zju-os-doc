@@ -13,9 +13,15 @@ nav:
     - intro.md
     - faq.md
     - lab0.md
+    - lab1.md
     - z1-spike.md
+  - 参考手册:
     - RISC-V 特权级手册: spec/riscv-privileged.html
     - RISC-V 用户级手册: spec/riscv-unprivileged.html
+    - as 汇编器手册: https://sourceware.org/binutils/docs/as.html
+    - ld 链接器手册: https://sourceware.org/binutils/docs/ld.html
+    - binutils 工具集（objdump、readelf）手册: https://sourceware.org/binutils/docs/binutils.html
+    - gcc 编译器手册: https://gcc.gnu.org/onlinedocs/
   - 助教文档:
     - ta/dev.md
     - ta/tool.md
