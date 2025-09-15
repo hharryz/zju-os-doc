@@ -15,7 +15,8 @@ nav:
     - lab0.md
     - z1-spike.md
   - 助教文档:
-    - ta.md
+    - ta/dev.md
+    - ta/tool.md
 
 theme:
   name: material
