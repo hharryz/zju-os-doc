@@ -87,9 +87,9 @@
 
 | 学期 | 情况 |
 | ---- | ---- |
-| 23 秋冬 | 开始建设课程文档 [TonyCrane/os23fall-stu](https://github.com/TonyCrane/os23fall-stu) |
-| 24 秋冬 | 教学班统一课程文档 [ZJU-SEC/os24fall-stu](https://github.com/ZJU-SEC/os24fall-stu) |
-| 25 秋冬 | 开课教师变更，各教学班自建文档 |
+| 23 秋冬 | [JuniorSNy/os24fall-stu-full](https://github.com/JuniorSNy/os24fall-stu-full) |
+| 24 秋冬 | 部分教学班统一使用 [ZJU-SEC/os24fall-stu](https://github.com/ZJU-SEC/os24fall-stu) |
+| 25 秋冬 | 因为各教学班变更方向不同，各自 fork 了 |
 
 25 年秋冬学期，本教学班向 [《编译原理》课程实验](https://git.zju.edu.cn/compiler) 看齐，相比之前的版本、其他教学班主要有以下改动：
 
