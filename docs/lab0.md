@@ -336,6 +336,32 @@ Domain0 Next Mode           : S-mode
     - QEMU RISC-V 启动实现：[qemu/hw/riscv/boot.c at master · qemu/qemu](https://github.com/qemu/qemu/blob/master/hw/riscv/boot.c)
     - OpenSBI 详解：[OpenSBI Deep Dive - RISC-V International](https://riscv.org/wp-content/uploads/2024/12/13.30-RISCV_OpenSBI_Deep_Dive_v5.pdf)
 
+### RISC-V 执行环境
+
+请打开 Volume I: Unprivileged ISA Specification，阅读：
+
+- （1 页）1.2. RISC-V Software Execution Environments and Harts
+
+我们希望你阅读后理解下列概念：
+
+- **Hart（hardware thread）**是抽象的执行资源，独立获取和执行指令。
+- **RISC-V 执行环境接口（Execution Environment Interface, EEI）**
+    - 描述程序运行的环境，包括：程序初始状态、异常、中断及环境调用的处理方式
+    - **例子：**Linux ABI、RISC-V Supervisor Binary Interface (SBI)
+    - **实现方式：**纯硬件、纯软件或软硬件结合。
+        - **Bare-metal 平台：**hart 直接由物理处理器线程实现，指令直接访问物理地址。
+        - **RISC-V 操作系统：**通过虚拟内存和时间复用，为用户提供多个用户级执行环境。
+        - **RISC-V Hypervisor：**为客操作系统提供多个 supervisor 级执行环境。
+        - **模拟器：**如 Spike、QEMU、rv8，可在 x86 系统上模拟 RISC-V harts。
+
+并且能理解上一节介绍的 QEMU 启动过程中，各个组件的角色：
+
+- QEMU 作为模拟器，实现 RISC-V ISA，提供 RISC-V hart
+- OpenSBI 作为固件，实现 SBI，提供 SEE
+- Linux 作为操作系统，实现 Linux ABI，提供 AEE
+
+这些概念奠定了后续实验的基础，请务必理解。
+
 ### GDB 调试内核
 
 现在需要打开两个终端，一个运行 QEMU，另一个运行 GDB 进行调试。你可以：

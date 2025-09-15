@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="Cz0eu6znZf_RfKfqPLl5" name="Page-1">
-        <mxGraphModel dx="1468" dy="753" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="1516" dy="779" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -8,31 +8,31 @@
                     <mxGeometry x="-250" y="258.5" width="1171" height="433" as="geometry"/>
                 </mxCell>
                 <mxCell id="2" value="软件" style="rounded=0;whiteSpace=wrap;html=1;horizontal=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="160" y="398" width="40" height="159" as="geometry"/>
+                    <mxGeometry x="-170" y="398" width="40" height="159" as="geometry"/>
                 </mxCell>
                 <mxCell id="3" value="硬件" style="rounded=0;whiteSpace=wrap;html=1;horizontal=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="160" y="557" width="40" height="63" as="geometry"/>
+                    <mxGeometry x="-170" y="557" width="40" height="63" as="geometry"/>
                 </mxCell>
                 <mxCell id="4" value="QEMU" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="200" y="583" width="120" height="37" as="geometry"/>
+                    <mxGeometry x="-130" y="583" width="120" height="37" as="geometry"/>
                 </mxCell>
                 <mxCell id="6" value="RISC-V 指令集规范" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="200" y="557" width="120" height="26" as="geometry"/>
+                    <mxGeometry x="-130" y="557" width="120" height="26" as="geometry"/>
                 </mxCell>
                 <mxCell id="7" value="OpenSBI" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="200" y="522" width="120" height="35" as="geometry"/>
+                    <mxGeometry x="-130" y="522" width="120" height="35" as="geometry"/>
                 </mxCell>
                 <mxCell id="8" value="SBI 规范" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="200" y="496" width="120" height="26" as="geometry"/>
+                    <mxGeometry x="-130" y="496" width="120" height="26" as="geometry"/>
                 </mxCell>
                 <mxCell id="9" value="Linux Kernel ABI" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="200" y="438" width="120" height="26" as="geometry"/>
+                    <mxGeometry x="-130" y="438" width="120" height="26" as="geometry"/>
                 </mxCell>
                 <mxCell id="10" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;你的 OS&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="200" y="464" width="120" height="32" as="geometry"/>
+                    <mxGeometry x="-130" y="464" width="120" height="32" as="geometry"/>
                 </mxCell>
                 <mxCell id="11" value="应用" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="200" y="398" width="120" height="40" as="geometry"/>
+                    <mxGeometry x="-130" y="398" width="120" height="40" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
