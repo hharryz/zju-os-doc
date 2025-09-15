@@ -40,30 +40,60 @@
 - Linux 和 WSL 环境请参考 [Docker CE | ZJU Mirror](https://mirrors.zju.edu.cn/docs/docker-ce/)
 - macOS 推荐使用 [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) 或 [OrbStack](https://orbstack.dev/download) (可以用 [Homebrew](https://formulae.brew.sh/formula/docker) 直接安装)
 
-实验代码库根目录下的 `Makefile` 将相关 Docker 命令封装成了 Makefile 目标。你可以：
+你有以下几种方式使用容器：
 
-- 运行 `make` 创建并启动容器
-- ++ctrl+d++ 退出并关闭容器，此时你在容器内的更改会被保存，下次 `make` 进入容器时可以继续使用
-- 如果你不小心搞坏了容器内的环境，运行 `make clean` 来删除容器，重新 `make` 运行一个新的容器
-- 如果课程群有通知容器更新，请执行 `make update` 来拉取最新的镜像，注意它会先执行 `make clean` 删除旧容器
+=== "VSCode DevContainer（推荐）"
 
-```console
-$ make
-docker compose create
-docker compose start
-[+] Running 1/1
- ✔ Container zju-os  Started               0.3s
-docker compose exec -it zju-os /usr/bin/fish
-Welcome to fish, the friendly interactive shell
-Type help for instructions on how to use fish
-root@zju-os /zju-os/code#
-```
+    VSCode、CLion 等现代编辑器/IDE 大多支持 DevContainer，下面以 VSCode 为例介绍：
 
-!!! tip
+    - VSCode 安装 [Dev Containers 插件](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+    - VSCode 打开实验仓库
+    - ++ctrl+shift+P++，输入 `reopen` 找到 `Dev Containers: Reopen in Container` 选项，选择它
+    - VSCode 将重载窗口，启动并连接到容器，自动完成插件安装等配置步骤
 
-    将 Docker 命令封装为 Makefile 目标仅仅是为了让常用操作更简便，不用打一长串命令。建议你自行学习 Makefile 中的命令含义，以便日后遇到问题时知道该怎么做。
+=== "Makefile（需要掌握）"
+
+    实验代码库根目录下的 `Makefile` 将相关 Docker 命令封装成了 Makefile 目标：
+
+    - `make`：创建并启动容器
+
+        ++ctrl+d++ 退出并关闭容器，此时你在容器内的更改会被保存，下次 `make` 进入容器时可以继续使用
+
+    - `make clean`：删除容器
+
+        如果你不小心搞坏了容器内的环境，运行该命令清除，然后重新 `make` 运行一个新的容器
+
+    - `make update`：拉取最新的镜像
+
+        如果课程群有通知容器更新，运行该命令，注意它会先执行 `make clean` 删除旧容器
+
+    ```console
+    $ make
+    docker compose create
+    docker compose start
+    [+] Running 1/1
+    ✔ Container zju-os  Started               0.3s
+    docker compose exec -it zju-os /usr/bin/fish
+    Welcome to fish, the friendly interactive shell
+    Type help for instructions on how to use fish
+    root@zju-os /zju-os/code#
+    ```
+
+    !!! tip
+
+        将 Docker 命令封装为 Makefile 目标仅仅是为了让常用操作更简便，不用打一长串命令。建议你自行学习 Makefile 中的命令含义，以便日后遇到问题时知道该怎么做。
 
 **代码库会被挂载到容器内的 `/zju-os/code` 目录下。**这意味着宿主机和容器共享代码库的文件，容器内对代码的修改会直接反映到宿主机上，反之亦然。文件保存在宿主机，所以不会因为容器被删除而丢失。
+
+!!! warning "注意文件权限问题"
+
+    同学们在宿主机上使用的一般是普通用户，而在容器内是 root 用户，容器内产生的文件（比如构建产物等）也都是属于 root 的。因此在宿主机上操作时，可能遇到文件权限问题，此时可以执行下面的命令将文件所有者转交回普通用户：
+
+        ```shell
+        sudo chmod -R <username>:<username> .
+        ```
+
+    特别地，执行一些 Git 操作也会产生文件，会产生这样的情况：在容器内执行 Git 操作后，在宿主机执行 Git 操作遇到 Permission Denied。因此，**我们已经将宿主机的 SSH、Git 配置映射到容器内，推荐在容器内执行 Git 操作**。
 
 !!! info "更多资料"
 
@@ -72,7 +102,6 @@ root@zju-os /zju-os/code#
     - `Dockerfile` 描述了容器镜像是如何构建的：[Dockerfile reference | Docker Docs](https://docs.docker.com/reference/dockerfile/)
     - 本课程的 `Dockerfile`：[tool/container/Dockerfile at main · ZJU-OS/tool](https://github.com/ZJU-OS/tool/blob/main/container/Dockerfile)
     - 容器内默认使用 `fish`，这是一个比 `bash` 更友好的 shell，提供开箱即用的历史纪录、自动补全显示等功能：[fish shell](https://fishshell.com/)
-    - 如果未来你有进入 Docker 容器调试、使用其他工作目录的需求，可以在 VSCode 中使用：[Dev Containers 插件](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
 ### 使用交叉编译工具链
 
@@ -311,6 +340,7 @@ Domain0 Next Mode           : S-mode
 
 现在需要打开两个终端，一个运行 QEMU，另一个运行 GDB 进行调试。你可以：
 
+- 按 [OS 实验导读#工具使用](intro.md#工具使用) 的说明使用 VSCode Attach 到容器内，开多个终端窗口
 - 在容器内使用 [tmux](https://github.com/tmux/tmux) 等终端复用工具。可参考 [Tmux 使用教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2019/10/tmux.html) 或 [Home · tmux/tmux Wiki](https://github.com/tmux/tmux/wiki)。
 - 在宿主机上打开两个终端窗口，均执行 `make` 进入容器。
 

@@ -116,16 +116,12 @@ git merge upstream/<new-lab>
 
 ## 工具使用
 
-如果你需要语法分析等辅助工具，建议配置 [clangd](https://clangd.llvm.org/)，它比 VSCode 自带的 IntelliSense 好用很多。IntelliSense 解析时容易受到系统头文件的影响，而 clangd 直接使用编译命令生成的编译数据库 `compile_commands.json`，能准确地解析代码关联。
+VSCode 自带的 IntelliSense 解析时容易受到系统头文件的影响，产生一堆报错，在内核编程等特殊场景下表现不佳。我们推荐使用如下工具：
 
-该工具已经内置在课程使用的容器环境中。我们推荐的开发流程如下：
+- [clangd](https://clangd.llvm.org/)：一个基于 LLVM 的 C/C++ 语言服务器，提供智能补全、语法检查等功能。它直接使用编译命令生成的编译数据库 `compile_commands.json`，能准确地解析代码关联。
+- [bear](https://github.com/rizsotto/Bear)：一个生成 `compile_commands.json` 的工具，能将 Makefile 生成的编译命令转换为 JSON 格式，供 clangd 使用。
 
-- 在容器外完成 Git 操作。因为进入容器后以 root 身份运行，使用 Git 命令可能产生权限问题
-- 运行 `make` 启动容器
-- 在 VSCode 中 ++ctrl+shift+P++，输入 `att run` 会看到 `Dev Containers: Attach to Running Container...` 选项，选择它进入容器选择界面，选择 `zju-os-code` 容器，将会新建一个窗口连接到容器中
-- 通过该方式连接容器后，VSCode 会自动识别 `.devcontainer` 目录下的配置，安装推荐的插件
-- 运行 `make` 完成编译，会自动生成 `compile_commands.json` 文件，clangd 会自动识别该文件并提供语法分析、补全等功能
-- Enjoy it
+相关工具已经内置在课程使用的容器环境中，如果你后续使用 DevContainer 开发（见 Lab0）将会自动启用。感兴趣的同学可以自行阅读这些工具的文档。
 
 ## 实验与考试的关联
 
