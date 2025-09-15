@@ -29,6 +29,11 @@ jobs:
                   restore-keys: |
                       mkdocs-material-
             - run: pip install -r requirements.txt
+            - name: Get latest RISC-V Spec HTML
+              run: |
+                  mkdir -p docs/spec
+                  wget https://github.com/riscv/riscv-isa-manual/releases/latest/download/riscv-privileged.html -O docs/spec/riscv-privileged.html
+                  wget https://github.com/riscv/riscv-isa-manual/releases/latest/download/riscv-unprivileged.html -O docs/spec/riscv-unprivileged.html
             - run: mkdocs build
 
     deploy:

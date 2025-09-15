@@ -14,6 +14,8 @@ nav:
     - faq.md
     - lab0.md
     - z1-spike.md
+    - RISC-V 特权级手册: spec/riscv-privileged.html
+    - RISC-V 用户级手册: spec/riscv-unprivileged.html
   - 助教文档:
     - ta/dev.md
     - ta/tool.md
