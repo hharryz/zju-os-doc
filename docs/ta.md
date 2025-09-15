@@ -2,7 +2,10 @@
 
 本文档面向助教，学生不需要阅读。
 
-## 开发流程
+- 助教代码仓库（非公开）见 [ZJU-OS/code-private](https://github.com/ZJU-OS/code-private)。
+- 助教工具仓库见 [ZJU-OS/tool](https://github.com/ZJU-OS/tool)。
+
+## 助教仓库开发流程
 
 本课程的开发在 GitHub 上进行，ZJU Git 定期手工同步。
 
@@ -47,3 +50,37 @@
     git checkout -b labN
     git push upstream labN
     ```
+
+如果今后参与开发的助教增多，为了防止代码不慎泄露，建议：
+
+- 大部分助教仅在 `private` 进行单仓库的开发、测试、合并到发布分支等任务
+- 推送到 `upstream` 的操作由专人执行
+- `upstream` 仓库设置分支保护策略，避免 `main` 分支被误推送到其中
+
+## 多平台镜像构建
+
+课程需要支持使用 amd64 和 arm64 平台的学生完成实验，因此使用 [Multi-arch build and images, the simple way | Docker](https://www.docker.com/blog/multi-arch-build-and-images-the-simple-way/) 构建多平台镜像，流程如下：
+
+- 分别在 arm64 和 amd64 平台上执行
+
+    ```shell
+    make build-image
+    make push-image
+    ```
+
+- 然后在其中一个地方执行
+
+    ```shell
+    make push-multi
+    ```
+
+    拉取在另一个平台上构建的镜像，使用 `docker manifest` 合成 `latest` 描述文件并推送。
+
+相比用 Tag 区分不同架构，这么折腾一番可以让 Docker 自动匹配到对应架构，镜像名不用指定标签。
+
+理论上来说，使用 Docker buildx 的 [Multi-platform builds](https://docs.docker.com/build/building/multi-platform/) 就能在一个平台上完成所有构建，更加简洁。但是：
+
+- 笔者没有配置成功
+- 跨架构运行实在是太慢了
+
+但 Manifest 是 Docker 的实验性功能，有时候创建 `latest` 并不覆盖，挺奇怪的。
