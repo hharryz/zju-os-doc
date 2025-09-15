@@ -48,7 +48,7 @@
 
     - VSCode 安装 [Dev Containers 插件](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
     - VSCode 打开实验仓库
-    - ++ctrl+shift+P++，输入 `reopen` 找到 `Dev Containers: Reopen in Container` 选项，选择它
+    - ++ctrl+shift+p++，输入 `reopen` 找到 `Dev Containers: Reopen in Container` 选项，选择它
     - VSCode 将重载窗口，启动并连接到容器，自动完成插件安装等配置步骤
 
 === "Makefile（需要掌握）"
@@ -361,6 +361,10 @@ Domain0 Next Mode           : S-mode
 - Linux 作为操作系统，实现 Linux ABI，提供 AEE
 
 这些概念奠定了后续实验的基础，请务必理解。
+
+!!! question "考点"
+
+    - 你实现的操作系统需要 SEE，你应该去查看哪个规范了解 SEE 的接口？
 
 ### GDB 调试内核
 
