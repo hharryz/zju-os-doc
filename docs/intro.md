@@ -81,7 +81,7 @@ RISC-V 因其开源、模块化的特点，拥有丰富的扩展指令集。**�
 
 为了方便助教查看同学们的代码修改、实现自动化评测，本教学班统一使用 [ZJU Git](https://git.zju.edu.cn/) 进行代码管理。同学们需要使用指定的仓库提交代码、通过评测。对于未使用过 ZJU Git 的同学，请前往[登录界面](https://git.zju.edu.cn/users/sign_in)创建账号。同时 [ZJU Git 101](https://www.pages.zjusct.io/git101/) 提供了一些使用帮助。
 
-课程初期名单没有确定，Lab0 也没有代码工作，所以尚未为各位同学创建仓库。请同学们暂时使用发布仓库（`https://git.zju.edu.cn/os/code.git`）完成 Lab0：
+课程初期名单没有确定，Lab0 也没有代码工作，所以尚未为各位同学创建仓库。请同学们暂时使用发布仓库（`git@git.zju.edu.cn:os/code.git`）完成 Lab0：
 
 ```shell
 git clone git@git.zju.edu.cn:os/code.git
