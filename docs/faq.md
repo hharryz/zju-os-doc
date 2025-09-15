@@ -26,3 +26,32 @@
 - 解决办法：
 
     - Windows Docker Desktop 用户：在 Docker Desktop 设置界面进入 `Resources` -> `Proxies`，打开 `Manual proxy configuration`，将所有代理设置留空，然后点击 `Apply`，重启 Docker Desktop。
+
+### Git not a valid repository name
+
+- 现象：
+
+    ```console
+    git clone git@git.zju.edu.cn:...
+    fatal: remote error:
+      ... is not a valid repository name
+    Visit https://support.github.com/ for help
+    ```
+
+- 原因：
+
+    从报错可以看到是 GitHub 返回的错误，但我们的仓库在 ZJU Git。这一般是 Git 配置错误导致的，运行 `git config --list` 检查是否有错误的配置。
+
+    目前发现有错误配置如下：
+
+    ```text
+    core.sshcommand=ssh -T -p 443 -o Hostname=ssh.github.com
+    ```
+
+- 解决办法：
+
+    删除相关错误配置：
+
+    ```console
+    git config --global --unset core.sshcommand
+    ```
