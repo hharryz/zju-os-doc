@@ -84,7 +84,7 @@ RISC-V 因其开源、模块化的特点，拥有丰富的扩展指令集。**�
 课程初期名单没有确定，Lab0 也没有代码工作，所以尚未为各位同学创建仓库。请同学们暂时使用发布仓库（`https://git.zju.edu.cn/os/code.git`）完成 Lab0：
 
 ```shell
-git clone https://git.zju.edu.cn/os/code.git
+git clone git@git.zju.edu.cn:os/code.git
 cd code
 ```
 
@@ -92,8 +92,8 @@ cd code
 
 ```console
 $ git remote -v
-origin  https://git.zju.edu.cn/os/code.git (fetch)
-origin  https://git.zju.edu.cn/os/code.git (push)
+origin  git@git.zju.edu.cn:os/code.git (fetch)
+origin  git@git.zju.edu.cn:os/code.git (push)
 $ git remote rename origin upstream
 $ git remote add origin git@git.zju.edu.cn:os/2025/jijiangming/<你的学号>.git
 $ git fetch origin
