@@ -83,7 +83,7 @@ RISC-V 因其开源、模块化的特点，拥有丰富的扩展指令集。**�
 
 课程初期名单没有确定，Lab0 也没有代码工作，所以尚未为各位同学创建仓库。请同学们暂时使用发布仓库（`https://git.zju.edu.cn/os/code.git`）完成 Lab0：
 
-```console
+```shell
 git clone https://git.zju.edu.cn/os/code.git
 cd code
 ```
@@ -112,7 +112,7 @@ $ git branch --set-upstream-to=origin/lab0 lab0
 
 ![git.drawio](intro.assets/git.drawio)
 
-```bash
+```shell
 # 切换到对应的 lab 分支
 git checkout <labN>
 # ...进行你的开发工作
