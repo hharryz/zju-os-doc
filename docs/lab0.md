@@ -344,7 +344,7 @@ Domain0 Next Mode           : S-mode
 - 在容器内使用 [tmux](https://github.com/tmux/tmux) 等终端复用工具。可参考 [Tmux 使用教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2019/10/tmux.html) 或 [Home · tmux/tmux Wiki](https://github.com/tmux/tmux/wiki)。
 - 在宿主机上打开两个终端窗口，均执行 `make` 进入容器。
 
-在其中一个终端运行 `make qemu-debug`，会看到 QEMU 命令执行后就停住了。在另一个终端运行 `make gdb`，GDB 自动连接到 QEMU 上，但因为什么命令都没执行，GDB 显示的内容全空：
+在其中一个终端运行 `make debug`，会看到 QEMU 命令执行后就停住了。在另一个终端运行 `make gdb`，GDB 自动连接到 QEMU 上，但因为什么命令都没执行，GDB 显示的内容全空：
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
