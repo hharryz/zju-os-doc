@@ -89,13 +89,25 @@ RISC-V 因其开源、模块化的特点，拥有丰富的扩展指令集。**�
 ![git.drawio](intro.assets/git.drawio)
 
 ```bash
+# 克隆助教为你创建的私有仓库
 git clone git@git.zju.edu.cn:os/2025/jijiangming/<你的学号>.git
+cd <你的学号>
+# 关联发布仓库
 git remote add upstream https://git.zju.edu.cn/os/code.git
+# 切换到对应的 lab 分支
+git checkout <labN>
+# ...进行你的开发工作
 git commit
+# 推送到你的私有仓库
 git push
-git checkout -b <new-lab>
+# 创建下一个实验的分支
+git checkout -b <labN+1>
+# 从上游合并下一个实验的代码
 git fetch upstream
-git merge upstream/<new-lab>
+git merge upstream/<labN+1>
+# 解决冲突
+git commit
+# ... 进行你的开发工作
 ```
 
 其中 `git merge` 步骤可能遇到冲突。你需要理解冲突部分的代码的作用，并决定保留、合并或是手动整理代码。
