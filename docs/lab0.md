@@ -47,9 +47,20 @@
     VSCode、CLion 等现代编辑器/IDE 大多支持 DevContainer，下面以 VSCode 为例介绍：
 
     - VSCode 安装 [Dev Containers 插件](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-    - VSCode 打开实验仓库
+    - {==VSCode 打开实验仓库==}
     - ++ctrl+shift+p++，输入 `reopen` 找到 `Dev Containers: Reopen in Container` 选项，选择它
+
+        !!! tips
+
+            VSCode 是从当前打开的文件夹找 `.devcontainer` 的，所以请确保 VSCode 当前打开了实验仓库的根目录。
+
+            如果 VSCode 弹出了选择容器之类的窗口，说明你没有打开正确的目录。
+
     - VSCode 将重载窗口，启动并连接到容器，自动完成插件安装等配置步骤
+
+        !!! tips
+
+            实验镜像比较大（约 10G），你可以结合自己的网速评估一下需要的拉取时间，耐心等待。
 
 === "Makefile（需要掌握）"
 
