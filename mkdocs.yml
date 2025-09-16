@@ -28,9 +28,9 @@ nav:
     - gcc 编译器手册: https://gcc.gnu.org/onlinedocs/
   - 源码仓库:
     - Linux 源码（GitHub）: https://github.com/torvalds/linux
-    - Linux 源码（Bootlin Elixir Cross Referencer）:https://elixir.bootlin.com/
-    - OpenSBI 源码：https://github.com/riscv-software-src/opensbi
-    - QEMU 源码：https://github.com/qemu/qemu/
+    - Linux 源码（Bootlin Elixir Cross Referencer）: https://elixir.bootlin.com/
+    - OpenSBI 源码: https://github.com/riscv-software-src/opensbi
+    - QEMU 源码: https://github.com/qemu/qemu/
   - 助教文档:
     - ta/dev.md
     - ta/tool.md
