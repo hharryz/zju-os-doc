@@ -230,9 +230,12 @@ index.html           100% |********************************|  2381  0:00:00 ETA
 
 - 现在与你交互的是 [QEMU 自带的终端复用器（Terminal Multiplexer）](https://www.qemu.org/docs/master/system/mux-chardev.html)
     - 它连接着 QEMU Monitor 和虚拟机的控制台（Console），默认情况下连接后者。
-    - ++ctrl+a++ ++c++ 可以在两者间切换。
-    - ++ctrl+a++ ++h++ 可以查看帮助。
-    - ++ctrl+a++ ++x++ 可以退出 QEMU。
+    - ++ctrl+a++ 再按 ++c++ 可以在两者间切换。
+    - ++ctrl+a++ 再按 ++h++ 可以查看帮助。
+    - ++ctrl+a++ 再按 ++x++ 可以退出 QEMU。
+
+    !!! tip "像这里的 ++ctrl+a++ 这样的前导组合键在终端复用器（如 tmux）中被称为逃逸键（escape key）。当你按下逃逸键时，终端复用器会进入「其自身的」命令模式，等待你输入后续的命令键。而其他所有按键都会被直接传递给当前连接的终端。"
+
 - [QEMU Monitor](https://qemu-project.gitlab.io/qemu/system/monitor.html) 可以控制、查看、调试虚拟机。
 
     它与下文介绍的 GDB 各有所长：QEMU Monitor 可以查看内存映射、TLB 等各类系统信息，而 GDB 专注于程序调试，主要是查看和控制代码运行。在后续实验中，如果你的代码有问题，可能导致 GDB 无法调试，而 QEMU Monitor 仍然可以使用。

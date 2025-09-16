@@ -2,18 +2,7 @@
 
 欢迎来到《操作系统》课程实验。按照培养方案，你已经完成了《数字逻辑设计》《计算机组成》《计算机体系结构》等硬件课程的学习，了解了 RISC-V 指令集架构和计算机系统的基本组成。现在，我们将进入软件部分，动手实现一个运行在 RISC-V 架构下的简易操作系统内核。
 
-OS 实验主要考察工程实践能力，核心要点是**按照 RISC-V 指令集规范，以 Linux 为参考**完成自己的操作系统内核。这需要你**具备阅读大型项目的英文文档和源代码，理解相关内容并动手实现**的能力，下列资料将陪伴你的整个实验过程：
-
-- [RISC-V Ratified Specifications](https://riscv.org/specifications/ratified/)
-    - [ISA Specifications](https://github.com/riscv/riscv-isa-manual/)
-        - 非特权级手册：The RISC-V Instruction Set Manual Volume I: Unprivileged ISA
-        - 特权级手册：The RISC-V Instruction Set Manual Volume II: Privileged Architecture
-    - Non-ISA Hardware Specifications
-        - SBI 规范：[RISC-V Supervisor Binary Interface Specification](https://github.com/riscv-non-isa/riscv-sbi-doc/)
-        - 汇编手册：[RISC-V Assembly Programmer's Manual](https://github.com/riscv-non-isa/riscv-asm-manual)
-- Linux 内核源码：
-    - [torvalds/linux: Linux kernel source tree](https://github.com/torvalds/linux)
-    - [Linux source code - Bootlin Elixir Cross Referencer](https://elixir.bootlin.com/)
+OS 实验主要考察工程实践能力，核心要点是**按照 RISC-V 指令集规范，以 Linux 为参考**完成自己的操作系统内核。这需要你**具备阅读大型项目的英文文档和源代码，理解相关内容并动手实现**的能力。左侧导航栏中列出的参考手册和源码仓库将伴随你的整个实验过程。
 
 后续的实验文档会指引同学们去阅读相应章节，但不会复述标准中的内容，避免产生歧义、过时等情况造成误导。
 
@@ -69,7 +58,7 @@ RISC-V 因其开源、模块化的特点，拥有丰富的扩展指令集。**�
 
 ## Linux 内核源码和课程仓库结构
 
-详见 [Linux source code layout — The Linux Kernel documentation](https://linux-kernel-labs.github.io/refs/heads/master/lectures/intro.html#linux-source-code-layout)。你可以打开本文开头提到的 Linux 源码链接，边读边看。
+详见 [Linux source code layout — The Linux Kernel documentation](https://linux-kernel-labs.github.io/refs/heads/master/lectures/intro.html#linux-source-code-layout)。你可以打开左侧的 Linux 源码链接，边读边看。
 
 课程仓库目录的组织结构与 Linux 源码保持一致。
 
@@ -82,6 +71,14 @@ RISC-V 因其开源、模块化的特点，拥有丰富的扩展指令集。**�
 ## 使用 Git 管理源代码
 
 为了方便助教查看同学们的代码修改、实现自动化评测，本教学班统一使用 [ZJU Git](https://git.zju.edu.cn/) 进行代码管理。同学们需要使用指定的仓库提交代码、通过评测。对于未使用过 ZJU Git 的同学，请前往[登录界面](https://git.zju.edu.cn/users/sign_in)创建账号。同时 [ZJU Git 101](https://www.pages.zjusct.io/git101/) 提供了一些使用帮助。
+
+Git 有两种链接：`git@...`（SSH）和 `https://...`（HTTPS）。我们推荐使用 SSH 方式，避免每次推送代码时都需要输入用户名和密码。这需要同学们在 ZJU Git 上添加 SSH 公钥，具体步骤见 [设置 SSH 访问 - ZJU Git 101](https://www.pages.zjusct.io/git101/prep/setup_ssh.html)。
+
+!!! info "FAQ"
+
+    有同学会问：Git 的 `user.name` 和 `user.email` 要设置成什么？其实设成什么都没关系，因为仓库的地址确定，我们会去对应的仓库看你的提交。
+
+    Git 平台（如 GitHub、GitLab、ZJU Git）会根据你的提交中的 `user.email` 来关联到你的账号，从而显示头像等信息。如果你想让提交显示正确的头像，可以将 `user.email` 设置成你在 ZJU Git 上绑定的邮箱。
 
 课程初期名单没有确定，Lab0 也没有代码工作，所以尚未为各位同学创建仓库。请同学们暂时使用发布仓库（`git@git.zju.edu.cn:os/code.git`）完成 Lab0：
 
