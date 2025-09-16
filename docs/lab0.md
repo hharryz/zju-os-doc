@@ -49,13 +49,15 @@
     - VSCode 安装 [Dev Containers 插件](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
     - {==VSCode 打开实验仓库==}
         - 注意：WSL 用户需要先点击左下角，连接到 WSL，然后{==在 WSL 环境中打开仓库==}，否则会弹出「是否在 WSL 中安装 Docker」等错误提示。
-    - ++ctrl+shift+p++，输入 `reopen` 找到 `Dev Containers: Reopen in Container` 选项，选择它
+    - 右下角可能会出现**开发容器（Dev Container）相关的弹窗**，点击在开发容器中打开
+
+        如果没有弹窗，则 ++ctrl+shift+p++，输入 `reopen` 找到 `Dev Containers: Reopen in Container` 选项，选择它
 
         !!! tips
 
             VSCode 是从当前打开的文件夹找 `.devcontainer` 的，所以请确保 VSCode 当前打开了实验仓库的根目录。
 
-            如果 VSCode 弹出了选择容器之类的窗口，说明你没有打开正确的目录。
+            如果选择 `Reopen in Container` 后 VSCode 弹出了选择容器之类的窗口，说明你没有打开正确的目录。
 
     - VSCode 将重载窗口，启动并连接到容器，自动完成插件安装等配置步骤
 
