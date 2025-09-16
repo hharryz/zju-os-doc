@@ -155,7 +155,6 @@ plugins:
       type: timeago
       locale: zh
   # 该插件本地编辑时关闭，CI 时自动开启
-  # 该行及以下的内容在 ZJU Git 流水线中自动删除
   - git-committers:
       enabled: false
       repository: zju-os/doc

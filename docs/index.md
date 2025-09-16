@@ -58,7 +58,7 @@
 
 | | GitHub | ZJU Git |
 | ---- | ---- | ---- |
-| 在线文档 | [ZJU-OS/doc](https://zju-os.github.io/doc/) | [暂未发布]() |
+| 在线文档 | [ZJU-OS/doc](https://zju-os.github.io/doc/) | [os/doc](http://os.pages.zjusct.io/doc) |
 | 文档仓库 | [ZJU-OS/doc](https://github.com/ZJU-OS/doc) | [os/doc](https://git.zju.edu.cn/os/doc) |
 | 代码仓库 | [ZJU-OS/code](https://github.com/ZJU-OS/code) | [os/code](https://git.zju.edu.cn/os/code) |
 | 助教工具 | [ZJU-OS/tool](https://github.com/ZJU-OS/tool) | [os/tool](https://git.zju.edu.cn/os/tool) |
