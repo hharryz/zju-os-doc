@@ -339,7 +339,7 @@ Domain0 Next Mode           : S-mode
     - 将 Linux 内核加载到内存中的 `0x80200000`
 - QEMU 内置的 OpenSBI 使用 `FW_DYNAMIC` 模式
     - QEMU 将 `next_addr` 等信息放在 `struct fw_dynamic_info` 结构体中，将该结构体的地址存放在 `a2` 寄存器中
-    - OpenSBI 读取该信息，了解下一步要怎么做
+    - OpenSBI 读取该信息，了解下一步要怎么做，从日志中可以看到它下一步跳转到 `next_addr` 即内核入口点地址，并调整特权级为 `next_mode` 即 S-Mode
 - `Booting Linux on hartid 0` 是内核 [`start_kernel()`](https://github.com/torvalds/linux/blob/master/init/main.c#L903) 打印出的第一条日志
 
 !!! info "更多信息"
