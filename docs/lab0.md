@@ -103,9 +103,9 @@
 
     同学们在宿主机上使用的一般是普通用户，而在容器内是 root 用户，容器内产生的文件（比如构建产物等）也都是属于 root 的。因此在宿主机上操作时，可能遇到文件权限问题，此时可以执行下面的命令将文件所有者转交回普通用户：
 
-        ```shell
-        sudo chmod -R <username>:<username> .
-        ```
+    ```shell
+    sudo chmod -R <username>:<username> .
+    ```
 
     特别地，执行一些 Git 操作也会产生文件，会产生这样的情况：在容器内执行 Git 操作后，在宿主机执行 Git 操作遇到 Permission Denied。因此，**我们已经将宿主机的 SSH、Git 配置映射到容器内，推荐在容器内执行 Git 操作**。
 
@@ -133,13 +133,15 @@ root@zju-os-code /z/code# file hello
 hello: ELF 64-bit LSB pie executable, UCB RISC-V, RVC, double-float ABI, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-riscv64-lp64d.so.1, BuildID[sha1]=963fa6ea0ba96c8e9b928927d0e0306355e326d5, for GNU/Linux 4.15.0, not stripped
 ```
 
+请你用 C 写一个 Hello World 程序，然后执行下面的步骤：
+
+- 生成它的 RISC-V 汇编代码
+- 将其编译为 RISC-V 可执行程序
+- 将 RISC-V 可执行程序反汇编
+
 !!! question "考点"
 
-    用 C 写一个 Hello World 程序：
-
-    - 生成它的 RISC-V 汇编代码
-    - 将其编译为 RISC-V 可执行程序
-    - 将 RISC-V 可执行程序反汇编
+    上面的步骤分别使用了哪几个工具？
 
 !!! info "更多资料"
 
