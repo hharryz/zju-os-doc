@@ -12,6 +12,15 @@
 
     因为 GitHub 不支持 Public 仓库的 Private Fork，**为了走 PR 流程，确保参与的助教知道发布的代码发生了什么变更**，我们创建了一个中转仓库。助教需要将准备发布的代码推送到中转仓库，走 PR 流程后再合并到发布仓库。
 
+    比较让强迫症难受的一点是，GitHub Pull Request 不能同时支持下面两个要求：
+
+    - 不生成 Merge Commit
+    - 保留 Commit 的 Hash
+
+    在本地执行 `git merge` 时，如果可以 Fast-forward 则能同时满足上面两个要求（GitLab 倒是提供了选项支持 Fast-forward），这样比较优雅，能够保持[线性历史](https://stackoverflow.com/questions/20348629/what-are-the-advantages-of-keeping-linear-history-in-git)。但 GitHub 实际上执行的更像是 `git merge --no-ff`，见 [git - GitHub: Commit is changed after merge - Stack Overflow](https://stackoverflow.com/questions/52849531/github-commit-is-changed-after-merge)。
+
+    最后选择了使用 Merge 的方式合并 PR，虽然会产生一个多余的 Merge Commit 比较丑，但至少不会导致 Hash 变化，需要 Sync Fork 丢弃原始提交。
+
 - （私有）完整代码仓库 [ZJU-OS/code-private](https://github.com/ZJU-OS/code-private)
 
     `main` 分支存放实现了所有实验功能的代码，持续进行整体代码的维护和改进。
@@ -57,7 +66,7 @@
     # 从 code-private/main 合并代码到 code-private/fa25-release
     # 可以用 git merge 或 git checkout
     git merge --squash --no-commit main
-    git checkout private/main -- <需要的文件>
+    git checkout main -- <需要的文件>
     # 手工选择需要合并的文件，挖空学生完成的代码
     # 可以分多次提交，更加清晰地添加文件
     git commit -am "labN: release"
