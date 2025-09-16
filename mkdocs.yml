@@ -18,13 +18,19 @@ nav:
   - 参考手册:
     - RISC-V 特权级手册: spec/riscv-privileged.html
     - RISC-V 用户级手册: spec/riscv-unprivileged.html
+    - RISC-V ELF ABI 手册: spec/riscv-abi.pdf
+    - RISC-V SBI 手册: spec/riscv-sbi.pdf
+    - RISC-V 汇编手册: spec/riscv-asm.pdf
+    - RISC-V 汇编教程: https://riscv-programming.org/
     - as 汇编器手册: https://sourceware.org/binutils/docs/as.html
     - ld 链接器手册: https://sourceware.org/binutils/docs/ld.html
     - binutils 工具集（objdump、readelf）手册: https://sourceware.org/binutils/docs/binutils.html
     - gcc 编译器手册: https://gcc.gnu.org/onlinedocs/
-    - RISC-V 汇编教程: https://riscv-programming.org/
+  - 源码仓库:
     - Linux 源码（GitHub）: https://github.com/torvalds/linux
     - Linux 源码（Bootlin Elixir Cross Referencer）:https://elixir.bootlin.com/
+    - OpenSBI 源码：https://github.com/riscv-software-src/opensbi
+    - QEMU 源码：https://github.com/qemu/qemu/
   - 助教文档:
     - ta/dev.md
     - ta/tool.md

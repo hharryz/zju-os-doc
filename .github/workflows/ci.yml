@@ -63,4 +63,7 @@ jobs:
                   mkdir -p docs/spec
                   wget https://github.com/riscv/riscv-isa-manual/releases/latest/download/riscv-privileged.html -O docs/spec/riscv-privileged.html
                   wget https://github.com/riscv/riscv-isa-manual/releases/latest/download/riscv-unprivileged.html -O docs/spec/riscv-unprivileged.html
+                  wget https://github.com/riscv-non-isa/riscv-elf-psabi-doc/releases/latest/download/riscv-abi.pdf -O docs/spec/riscv-abi.pdf
+                  wget https://github.com/riscv-non-isa/riscv-sbi-doc/releases/latest/download/riscv-sbi.pdf -O docs/spec/riscv-sbi.pdf
+                  wget https://github.com/riscv-non-isa/riscv-asm-manual/releases/latest/download/riscv-asm.pdf -O docs/spec/riscv-asm.pdf
             - run: mkdocs gh-deploy --force --no-history
