@@ -29,26 +29,58 @@
 
     本文档中标记为考点的方块是希望同学们能掌握的知识点，会在验收时提问。
 
-## 实验步骤
+## Part 1：环境配置
 
-在 [OS 实验导读](intro.md) 中，你应该已经把仓库克隆到本地了。
-
-### 使用 Docker 容器
+### 安装 Docker
 
 如果你尚未安装 Docker：
 
 - Linux 和 WSL 环境请参考 [Docker CE | ZJU Mirror](https://mirrors.zju.edu.cn/docs/docker-ce/)
 - macOS 推荐使用 [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) 或 [OrbStack](https://orbstack.dev/download) (可以用 [Homebrew](https://formulae.brew.sh/formula/docker) 直接安装)
 
-你有以下几种方式使用容器：
+### 克隆代码仓库
+
+在 [OS 实验导读](intro.md) 中，你已经了解了 Git 工作流。现在执行第一步，克隆代码仓库。
+
+!!! tip "WSL 用户请不要将代码存放在 Windows 目录下"
+
+    WSL 用户应该了解：Linux 和 Windows 的文件系统不同，文件权限、换行符、链接、大小写等方面都存在区别。
+
+    WSL 将 Windows 目录挂载到了 `/mnt/c` 等路径下，这只是为文件互访提供便利。官方并不建议你将文件**存放**在一边，又在另一边**使用**。首先性能较低，其次代码仓库等对文件权限、链接等有要求的项目很容易出问题。
+
+    请 WSL 用户将代码仓库克隆到 WSL 的 Linux 文件系统中（比如 `/home/<username>/` 下），以避免出现各种奇怪的问题。
+
+### 启动开发容器
+
+关于本课程使用的容器，请同学们了解一下几点：
+
+- **基本概念：**我们发布**镜像（image）**，同学们在本地**拉取（pull）**镜像，然后用镜像创建**容器（container）**，容器是镜像的一个运行实例。
+
+    容器可以看作一个轻量级的虚拟机，可以启动、停止、删除。容器内的文件系统和运行状态是独立的，删除容器会丢失**容器内**的文件和状态。
+
+- **代码挂载：**代码库会被**挂载（mount）**到容器内的 `/zju-os/code` 目录下。这意味着宿主机和容器共享代码库的文件，容器内对代码的修改会直接反映到宿主机上，反之亦然。文件保存在宿主机，所以不会因为容器被删除而丢失。
+- **用户与文件权限：**容器内的用户是 `root`，而宿主机上你一般使用的是普通用户。容器内创建的文件（比如编译产物等）属于 `root`，在宿主机上操作时可能遇到权限问题。此时可以执行下面的命令将文件所有者转交回普通用户：
+
+    ```shell
+    sudo chown -R <username>:<username> .
+    ```
+
+- **Git 和 SSH 配置映射：**
+
+    特别地，执行一些 Git 操作也会产生文件，因此会产生这样的情况：在容器内执行 Git 操作后，在宿主机执行 Git 操作遇到 Permission Denied。所以我们将宿主机的 Git 和 SSH 配置映射到容器内，这样同学们的开发、Git 操作都在容器内进行，不用回到宿主机了。
+
+    配置映射是通过挂载宿主机的 `~/.gitconfig`、`~/.ssh` 等文件实现的。因此请先在宿主机上配置好 Git 和 SSH（在上面你拉取仓库的时候应该已经配置好了），否则我们的检测脚本会报错。
+
+你有以下几种方式使用开发容器：
 
 === "VSCode DevContainer（推荐）"
 
-    VSCode、CLion 等现代编辑器/IDE 大多支持 DevContainer，下面以 VSCode 为例介绍：
+    VSCode、CLion 等现代编辑器/IDE 大多支持 DevContainer。通过代码仓库下的 `.devcontainer` 目录中的配置文件，编辑器/IDE 可以自动创建并连接到容器，保证所有开发者使用相同的容器环境。
+
+    下面以 VSCode 为例介绍使用流程：
 
     - VSCode 安装 [Dev Containers 插件](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
     - {==VSCode 打开实验仓库==}
-        - 注意：WSL 用户需要先点击左下角，连接到 WSL，然后{==在 WSL 环境中打开仓库==}，否则会弹出「是否在 WSL 中安装 Docker」等错误提示。
     - 右下角可能会出现**开发容器（Dev Container）相关的弹窗**，点击在开发容器中打开
 
         如果没有弹窗，则 ++ctrl+shift+p++，输入 `reopen` 找到 `Dev Containers: Reopen in Container` 选项，选择它
@@ -64,6 +96,8 @@
         !!! tip
 
             实验镜像比较大（约 10G），你可以结合自己的网速评估一下需要的拉取时间，耐心等待。
+
+            右下角应该会有弹窗表示开发容器正在启动，你可以点击查看日志了解启动进度。
 
 === "Makefile（需要掌握）"
 
@@ -97,18 +131,6 @@
 
         将 Docker 命令封装为 Makefile 目标仅仅是为了让常用操作更简便，不用打一长串命令。建议你自行学习 Makefile 中的命令含义，以便日后遇到问题时知道该怎么做。
 
-**代码库会被挂载到容器内的 `/zju-os/code` 目录下。**这意味着宿主机和容器共享代码库的文件，容器内对代码的修改会直接反映到宿主机上，反之亦然。文件保存在宿主机，所以不会因为容器被删除而丢失。
-
-!!! warning "注意文件权限问题"
-
-    同学们在宿主机上使用的一般是普通用户，而在容器内是 root 用户，容器内产生的文件（比如构建产物等）也都是属于 root 的。因此在宿主机上操作时，可能遇到文件权限问题，此时可以执行下面的命令将文件所有者转交回普通用户：
-
-    ```shell
-    sudo chown -R <username>:<username> .
-    ```
-
-    特别地，执行一些 Git 操作也会产生文件，会产生这样的情况：在容器内执行 Git 操作后，在宿主机执行 Git 操作遇到 Permission Denied。因此，**我们已经将宿主机的 SSH、Git 配置映射到容器内，推荐在容器内执行 Git 操作**。
-
 !!! info "更多资料"
 
     - 如果你不了解 Docker：[What is a Container? | Docker](https://www.docker.com/resources/what-container)
@@ -116,6 +138,8 @@
     - `Dockerfile` 描述了容器镜像是如何构建的：[Dockerfile reference | Docker Docs](https://docs.docker.com/reference/dockerfile/)
     - 本课程的 `Dockerfile`：[tool/container/Dockerfile at main · ZJU-OS/tool](https://github.com/ZJU-OS/tool/blob/main/container/Dockerfile)
     - 容器内默认使用 `fish`，这是一个比 `bash` 更友好的 shell，提供开箱即用的历史纪录、自动补全显示等功能：[fish shell](https://fishshell.com/)
+
+## Part 2：Linux 内核编译与调试
 
 ### 使用交叉编译工具链
 
@@ -357,13 +381,16 @@ Domain0 Next Mode           : S-mode
 
 ### RISC-V 执行环境
 
-请打开 Volume I: Unprivileged ISA Specification，阅读：
+请打开 RISC-V 非特权级手册，阅读：
 
-- （1 页）1.2. RISC-V Software Execution Environments and Harts
+- [1.2. RISC-V Software Execution Environments and Harts](spec/riscv-unprivileged.html#_risc_v_software_execution_environments_and_harts)
 
-我们希望你阅读后理解下列概念：
+你应该理解下列概念：
 
 - **Hart（hardware thread）**是抽象的执行资源，独立获取和执行指令。
+
+    因为有 Hart 这一层抽象，操作系统看到的情况也有可能与真实的硬件不同。比如，即使 CPU 只有单个物理核心，OpenSBI 这样的 SEE 也可以通过时间复用的方式，向上层提供多个 Hart。
+
 - **RISC-V 执行环境接口（Execution Environment Interface, EEI）**
     - 描述程序运行的环境，包括：程序初始状态、异常、中断及环境调用的处理方式
     - **例子：**Linux ABI、RISC-V Supervisor Binary Interface (SBI)
@@ -379,7 +406,7 @@ Domain0 Next Mode           : S-mode
 - OpenSBI 作为固件，实现 SBI，提供 SEE
 - Linux 作为操作系统，实现 Linux ABI，提供 AEE
 
-这些概念奠定了后续实验的基础，请务必理解。
+这些抽象层次奠定了后续实验的整体框架，请务必理解。
 
 !!! question "考点"
 

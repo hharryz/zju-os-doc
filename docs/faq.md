@@ -49,7 +49,7 @@
 
         确保你启动了 [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop)。
 
-### 运行 docker 命令时 ZJU Git EOF
+### 拉取容器时 ZJU Git EOF
 
 - 现象：
 
