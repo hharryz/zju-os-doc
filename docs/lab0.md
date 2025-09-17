@@ -172,7 +172,7 @@ hello: ELF 64-bit LSB pie executable, UCB RISC-V, RVC, double-float ABI, version
     - GNU 二进制工具文档，介绍了实验中会用到的相关工具：[Binutils - GNU Project - Free Software Foundation](https://www.gnu.org/software/binutils/)
     - [Coreutils - GNU core utilities](https://www.gnu.org/software/coreutils/)
 
-### 编译内核
+### 编译本地架构内核
 
 容器内的 `/zju-os/linux-source-*` 是预先放置好的 Linux 内核源码：
 
@@ -196,7 +196,17 @@ Kernel: arch/x86/boot/bzImage is ready  (#1)
 root@zju-os /z/linux-source-6.16# make distclean
 ```
 
-如果你看到了 `Kernel: ... is ready` 这一行，说明你成功构建出了**当前架构**的内核。
+上面的日志是 x86-64 架构的内核编译输出。其他架构的输出可能不一样，比如笔者的 macOS（arm64）上输出结尾如下：
+
+```console
+  LD [M]  net/qrtr/qrtr-tun.ko
+make[1]: Leaving directory '/zju-os/linux-source-6.16'
+```
+
+**总之，只要 Make 没有报 Error，一般就说明构建成功了。**此时文件夹中应该有我们需要两个重要的产物：
+
+- `arch/<arch>/boot/Image`
+- `vmlinux`
 
 !!! question "考点"
 
@@ -210,7 +220,7 @@ root@zju-os /z/linux-source-6.16# make distclean
     - Debian 发行版内核手册：[Chapter 4. Common kernel-related tasks](https://www.debian.org/doc/manuals/debian-kernel-handbook/ch-common-tasks.html)
     - Linux 内核的构建系统十分复杂，如果你有兴趣了解：[Linux Kernel Makefiles — The Linux Kernel documentation](https://docs.kernel.org/kbuild/makefiles.html)
 
-### 交叉编译内核
+### 交叉编译 RISC-V 架构内核
 
 请阅读这篇简明的文档 [Embedded Handbook/General/Cross-compiling the kernel - Gentoo wiki](https://wiki.gentoo.org/wiki/Embedded_Handbook/General/Cross-compiling_the_kernel)，了解内核交叉编译的步骤。
 
@@ -228,7 +238,7 @@ root@zju-os /z/linux-source-6.16# file vmlinux
 vmlinux: ELF 64-bit LSB executable, UCB RISC-V, RVC, soft-float ABI, version 1 (SYSV), statically linked, BuildID[sha1]=657ad614b9ebd9723a2d5ee0a25505df3a43b918, not stripped
 ```
 
-### 使用 QEMU 运行内核
+### 使用 QEMU 运行 RISC-V 内核
 
 回到代码仓库，使用 `make run` 启动 QEMU，运行构建好的内核：
 
