@@ -79,3 +79,18 @@
 - 大部分助教仅在 `private` 进行单仓库的开发、测试、合并到发布分支等任务
 - 推送到 `upstream` 的操作由专人执行
 - `upstream` 仓库设置分支保护策略，避免 `main` 分支被误推送到其中
+
+建议在 `.gitconfig` 中配置 `difftool`，方便用 VSCode 查看代码变更：
+
+```ini title="~/.gitconfig"
+[diff]
+    tool = vscode
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+```
+
+配置后，可以用 `git difftool` 代替 `git diff` 查看代码变更：
+
+```shell
+git difftool main -- # 比较当前分支和 main 分支的差异
+```
