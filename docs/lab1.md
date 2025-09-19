@@ -29,9 +29,28 @@
     那么有如下问题：
 
     - RISC-V 是如何设计中断与异常的？怎么开启时钟中断？这需要你学习**RISC-V 特权级、中断与异常、CSR 寄存器**。
-    - 时钟中断可能在任何时候发生。应该如何实现中断处理程序，保存和恢复现场，从而保证内核和用户程序的正确执行？这需要你学习**RISC-V 中断异常委派、中断处理**，然后补全 `arch/riscv/kernel/entry.S`。
+    - 中断、异常可能在任何时候发生。应该如何实现 Trap 处理程序，保存和恢复现场，从而保证内核和用户程序的正确执行？这需要你学习**RISC-V 中断异常委派、中断处理**，然后补全 `arch/riscv/kernel/entry.S`。
 
 完成这些，你就能做 Lab2 了。
+
+## 实验要求
+
+- 代码：完成所有任务，提交到 Git 仓库并通过测试。
+
+    - 提交代码前，请运行 `make format` 格式化代码。
+
+- 报告：提交 PDF 到学在浙大。内容包含：
+
+    - 各 Task 的实现思路与过程。
+    - 「动手做」部分的实验过程和问题解答。
+    - 你的实现亮点（如有）。
+    - 心得与吐槽（如有）。
+
+- 验收：到场，讲解助教指定的代码，回答助教的提问。
+
+!!! tip
+
+    所有的实验内容都不需要记背 😂。那些技术细节并不重要，都写在标准里，知道要用的时候在哪看就可以了。关键在整体理解，这也是助教验收时的考察重点。
 
 ## Part 1：启动工作
 
@@ -133,13 +152,13 @@
 
 你已经熟悉 RISC-V 汇编指令。但是为了写汇编代码，还要了解一些汇编器指令（assembler directive），这就像 C 语言中的预处理指令一样。
 
-阅读 `arch/riscv/head.S`，尝试理解它的内容。如果有不懂的地方，可以查阅 `as` 汇编器手册：
+阅读 `arch/riscv/head.S`，尝试理解它的内容。如果有不懂的地方，可以查阅 `as` 汇编器手册的下列章节：
 
 - [5 Symbols](https://sourceware.org/binutils/docs/as.html#Symbols-2)：阅读 5.1-5.4 即可
 - [7.3 .align [abs-expr[, abs-expr[, abs-expr]]]](https://sourceware.org/binutils/docs/as.html#Align)
 - [7.43 .global symbol, .globl symbol](https://sourceware.org/binutils/docs/as.html#Global)
 - [7.87 .section name - ELF Version](https://sourceware.org/binutils/docs/as.html#ELF-Version)
-- [7.65 .macro](https://sourceware.org/binutils/docs/as.html#g_t_002emacro)：类似于 C 语言中的 `#define`，当你需要复用代码时很好用，比如稍后写 Trap Handler 时会用到
+- [7.65 .macro](https://sourceware.org/binutils/docs/as.html#g_t_002emacro)
 - [7.94 .space size [,fill]](https://sourceware.org/binutils/docs/as.html#g_t_002espace-size-_005b_002cfill_005d)
 
 ??? note "要点"
@@ -180,10 +199,6 @@
             - 以字母或 `._` 开头，支持 `$`，大小写敏感。
             - 不以数字开头，除非是本地标签。
             - 支持多字节字符，但可能受编译器或系统限制。
-
-        - **本地符号**
-            - ELF 默认前缀 `.L`，传统 a.out 系统前缀 `L`。
-            - 本地符号通常不会出现在目标文件中，除非用 `-L` 选项。
 
     ??? note "5.4 The Special Dot Symbol"
 
@@ -228,6 +243,7 @@ riscv64-linux-gnu-ld --verbose
 - 3.1 [Basic Linker Script Concepts](https://sourceware.org/binutils/docs/ld.html#Basic-Linker-Script-Concepts)
 - 3.3 [Simple Linker Script Example](https://sourceware.org/binutils/docs/ld.html#Simple-Linker-Script-Example)
 - 3.5 [Assigning Values to Symbols](https://sourceware.org/binutils/docs/ld.html#Assigning-Values-to-Symbols)
+- 3.6.1 [Output Section Description](https://sourceware.org/binutils/docs/ld.html#Output-Section-Description-1)
 
 ??? note "要点"
 
@@ -394,7 +410,7 @@ riscv64-linux-gnu-ld --verbose
 
             - **必须取地址，不能直接当作数值使用**。
 
-现在，我们来简单对比一下 Linux 内核链接脚本和 `ld` 内置链接脚本（ELF 文件）的区别：
+现在，我们来简单对比一下 Linux 内核和 `ld` 内置（普通应用程序）的链接脚本的区别：
 
 <div class="grid cards" markdown>
 
@@ -425,8 +441,8 @@ SECTIONS
 
 关键要点：
 
-- **起始位置**：ELF 程序为 `0x10000 + SIZEOF_HEADERS`，而内核是 `0xffffffff80000000`。学习虚拟内存后你会理解这些地址受[操作系统内存布局](https://docs.kernel.org/arch/riscv/vm-layout.html)影响。
-- **对齐：**内核对齐要求十分严格，通常使用页面对齐（4KB 或 2MB 等）、缓存行对齐（64B）等，需要考虑内存分页、NUMA 架构 Cache 一致性等问题。
+- **起始位置**：应用程序为 `0x10000 + SIZEOF_HEADERS`，而内核是 `0xffffffff80000000`。学习虚拟内存后你会理解这些地址受[操作系统内存布局](https://docs.kernel.org/arch/riscv/vm-layout.html)影响。
+- **对齐：**内核对齐要求十分严格，通常使用页面对齐（4KB 或 2MB 等）、缓存行对齐（64B）等，需要考虑内存分页、NUMA 架构 Cache 一致性等问题（回忆你在《计算机体系结构》课程中学习的相关知识）。
 - **节的选择**：内核不使用[动态链接](https://lwn.net/Articles/961117/)、[重定位](https://dram.page/p/relative-relocs-explained/)，这些技术是为了应用程序设计的。因此没有 `.dynsym`、`.rela.dyn` 等节。
 - **`_start` 符号**：两者都定义了 `_start` 作为程序入口，但内核的 `_start` 定义在脚本中，而应用程序的 `_start` 由[标准库定义](https://www.monperrus.net/martin/compiling-where-is-_start)（标准库需要做一些初始化工作），并不在应用程序代码中。
 
@@ -437,36 +453,60 @@ SECTIONS
     /usr/lib/gcc-cross/riscv64-linux-gnu/15/../../../../riscv64-linux-gnu/bin/ld: warning: cannot find entry symbol _start; defaulting to 000000000000030a
     ```
 
-!!! note "Take Home Message"
+!!! note "要点"
 
-    总而言之，与普通的应用程序相比，操作系统的链接需要精细控制内存布局、初始化代码段、只读/可写数据段、调试信息和特定硬件相关表格的放置。
+    `vmlinux` 与普通应用程序的异同：
 
-    链接器的输入和输出都是二进制文件，受到 **ABI 规范** 的约束。
+    - 相同点：都是 **ELF 格式**的可执行文件。
+    - 不同点：与普通的应用程序相比，操作系统的链接需要精细控制内存布局，包括数据段的放置和对齐等。
 
-链接器脚本的具体语法并不重要，能大致看懂就行。接下来，请自行查找资料或使用 AI 辅助，理解实验代码仓中的 `arch/riscv/kernel/vmlinux.lds`，回答下面的问题：
+    链接器的输入和输出都是二进制文件，受到 **ABI 规范** 的约束。ELF 格式就是 ABI 规范的一部分。
+
+链接器脚本的具体语法并不重要，能大致看懂就行。接下来，请阅读并理解实验代码仓中的 `arch/riscv/kernel/vmlinux.lds`，回答下面的问题：
 
 !!! question "考点"
 
     - 这个链接脚本描述的就是整个内核的内存布局。它从哪里开始，有多大？
     - 其中的各个段（`.text`、`.rodata`、`.data`、`.bss`）分别存放什么数据？
-    - 你认为内核的栈应该放在哪里？为什么？（提示：栈的增长方向是？）
     - `_skernel` 这些符号是什么？你要如何在汇编和 C 代码中使用它们？
 
 !!! info "ABI 规范及其历史"
 
     RISC-V ABI 手册中没有 `.text`、`.rodata` 等的定义，因为它是历史传承下来的。RISC-V ABI 手册的参考文献指向了 [System V Application Binary Interface - DRAFT](https://www.sco.com/developers/gabi/latest/contents.html)，你可以在这里找到相关定义。
 
-    操作系统有比较久远的历史沉淀，因此ABI 层的规范不像 SBI 那样唯一。感兴趣的同学可以阅读 [The UNIX System -- History and Timeline -- UNIX History](https://unix.org/what_is_unix/history_timeline.html)。
+    操作系统有比较久远的历史沉淀，因此 ABI 层的规范不像 SBI 那样唯一。感兴趣的同学可以阅读 [The UNIX System -- History and Timeline -- UNIX History](https://unix.org/what_is_unix/history_timeline.html)。
+
+`vmlinux.lds` 用于生成 `vmlinux`，但 `Image` 又是怎么生成的呢？请你：
+
+- 阅读 `Makefile`，找到相关命令
+- 阅读 [objcopy (GNU Binary Utilities)](https://sourceware.org/binutils/docs/binutils/objcopy.html) 的简介部分，理解它生成 binary 时做了什么工作
+
+!!! note "要点"
+
+    `objcopy -O binary` 从 ELF 格式的可执行文件中直接把程序要运行的那部分指令和数据，原封不动拷贝出来，得到一个内存布局和运行时完全一致的二进制文件，称为内存镜像（memory dump）。
+
+    固件（如 OpenSBI）非常简单，在启动时只负责把这段二进制文件搬到一个固定的内存地址，然后直接跳过去执行，并不支持解析 ELF 等格式。
+
+    你将在 Lab4 中完成 ELF 文件的解析和加载。
+
+此外，构建过程还会生成几个文件用于辅助调试，遇到问题时好好利用它们：
+
+- `vmlinux.asm`：反汇编结果，包含源代码注释
+- `System.map`：符号表，包含所有符号的地址
+
+!!! example "动手做"
+
+    运行 `make` 构建内核。
+
+    用 VSCode 打开 `kernel/vmlinux`（已默认绑定到 ElfPreview 插件），查看它的内容。
+
+    这些信息也可以通过 `readelf` 工具查看，请你自行尝试。
 
 ### OpenSBI 调试
 
 本节让我们动手探究 OpenSBI 跳转到内核时，系统的状态（寄存器、内存等）是什么样的。
 
-!!! question "考点"
-
-    - OpenSBI 跳转到内核时，`sp` 寄存器的值是多少？
-
-同时，注意到 OpenSBI 有如下输出。这是 OpenSBI 在通过物理内存保护（Physical Memory Protection, PMP）机制设置物理内存的权限：
+注意到 OpenSBI 有如下输出。这是 OpenSBI 在通过物理内存保护（Physical Memory Protection, PMP）机制设置物理内存的权限：
 
 ```text
 Domain0 Region00            : 0x0000000000100000-0x0000000000100fff M: (I,R,W) S/U: (R,W)
@@ -479,13 +519,23 @@ Domain0 Region06            : 0x000000000c000000-0x000000000c3fffff M: (I,R,W) S
 Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
 ```
 
-!!! question "考点"
+!!! example "动手做"
 
-    - `sp` 落在哪个区域？该区域各个特权级的权限是什么？
+    按 Lab0 中的步骤启动 QEMU 和 GDB 调试。
+
+    使用 GDB 在 OpenSBI 跳转到的地址（Next Addr）处设置断点，查看此时：
+
+    - `sp` 寄存器的值是多少？
+    - 这属于哪个区域，该区域各个特权级的权限是什么？
+
+    用 VSCode 打开 `kernel/arch/riscv/kernel/Image`（已默认绑定到 Hex Editor 插件），查看它的内容。你会发现其中有一大块全是 0 的区域，这就是我们为 C 函数预留的栈空间。
+
+    - 这一部分的起始和结束位置是多少？在 `System.map` 中能找到对应的符号吗？（提示：`Image` 的起始位置是 `0x80200000`，记得加上这个偏移）
+    - 为什么选择在 `.bss` 段开辟栈空间？（提示：栈的增长方向是？）
 
 !!! info "更多资料"
 
-    - Physical Memory Protection (PMP) 机制：RISC-V 特权级手册 [3.7. Physical Memory Protection](https://zju-os.github.io/doc/spec/riscv-privileged.html#pmp)
+    - Physical Memory Protection (PMP) 机制：RISC-V 特权级手册 [3.7. Physical Memory Protection](spec/riscv-privileged.html#pmp)
     - OpenSBI 相关源码相关源码位于 [`lib/sbi/sbi_domain.c`](https://github.com/riscv-software-src/opensbi/blob/master/lib/sbi/sbi_domain.c) 中的 `sbi_domain_init()`
     - 感兴趣的同学可以使用 QEMU Monitor 打印内存树（`info mtree`），对比了解 OpenSBI 为什么要设置这些 PMP 区域
 
@@ -655,7 +705,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
                 asm("sysint" : "=r"(result) : "0"(p1), "r"(p2));
                 ```
 
-!!! question "思考题"
+!!! example "动手做"
 
     下面这段 C 内联汇编存在问题：
 
@@ -666,39 +716,39 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 
 ### SBI 与 ECALL
 
-请阅读 Volume I: Unprivileged ISA Specification 的以下章节：
+请阅读以下材料：
 
-- 2.8. Environment Call and Breakpoints
+- 非特权级手册 [2.8. Environment Call and Breakpoints](spec/riscv-unprivileged.html#ecall-ebreak)
 
     !!! question "考点"
 
         - ECALL 指令的作用是什么？
         - 对于我们实现的操作系统来说，服务请求的参数传递由谁定义？
 
-请阅读 RISC-V Supervisor Binary Interface Specification 的以下章节：
+- [SBI 手册](spec/riscv-sbi.pdf)
 
-- Chapter 1. Introduction
+    - Chapter 1. Introduction
 
-    !!! question "考点"
+        !!! question "考点"
 
-        - 什么是 SBI？它为谁提供服务？
+            - 什么是 SBI？它为谁提供服务？
 
-- Chapter 3. Binary Encoding 的章节导言
+    - Chapter 3. Binary Encoding 的章节导言
 
-    !!! question "考点"
+        !!! question "考点"
 
-        - 在本课程中，谁是 Supervisor？谁是 SEE？
-        - 如何标识一个特定的 SBI 调用？
-        - SBI 调用的参数和返回值是如何传递的？
-        - SBI 调用时，哪些寄存器的值不会被保存？
-        - 如何判断 SBI 调用是否成功？
+            - 在本课程中，谁是 Supervisor？谁是 SEE？
+            - 如何标识一个特定的 SBI 调用？
+            - SBI 调用的参数和返回值是如何传递的？
+            - SBI 调用时，哪些寄存器的值不会被保存？
+            - 如何判断 SBI 调用是否成功？
 
-- Chapter 12. Debug Console Extension (EID #0x4442434E "DBCN")
+    - Chapter 12. Debug Console Extension (EID #0x4442434E "DBCN")
 
-    !!! question "考点"
+        !!! question "考点"
 
-        - Debug Console Extension 提供了什么功能？
-        - `sbi_debug_console_write` 函数的参数和返回值分别是什么？
+            - Debug Console Extension 提供了什么功能？
+            - `sbi_debug_console_write` 函数的参数和返回值分别是什么？
 
 ### Task 2：使用 SBI 实现 `printk()`
 
@@ -711,11 +761,11 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 你的任务是：
 
 - 在 `arch/riscv/sbi.c` 中使用内联汇编实现 `sbi_ecall()`。
-- 在 `arch/riscv/sbi.c` 中补全 `sbi_debug_console_*()` 几个函数。
+- 在 `arch/riscv/sbi.c` 中补全 `sbi_debug_console_*()` 几个函数，也就是向 `sbi_ecall()` 传递正确的参数。
 
 !!! success "完成条件"
 
-    - 成功看到 `Hello, ZJU-OS!`。
+    - 成功看到 `Hello, ZJU OS 2025!`。
     - 通过评测框架的 `lab1-task2` 测试。
 
 !!! info "更多资料"
@@ -726,11 +776,19 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 
 ## Part 2：时钟中断及其处理
 
-### RISC-V 特权级
+### RISC-V 特权级、中断与异常、CSR 寄存器
 
-请阅读 Volume I: Unprivileged ISA Specification 的以下章节：
+请阅读以下材料：
 
-- 1.6. Exceptions, Traps, and Interrupts 的第一段（直接贴在下面了）：
+- 特权级手册 [1.2. Privilege Levels](spec/riscv-privileged.html#_privilege_levels)：
+
+    !!! question "考点"
+
+        - 特权级是用来干什么的？
+        - 执行当前特权级不允许的操作会发生什么？
+        - M、U、S 模式分别是为了什么设计的？
+
+- 非特权级手册 [1.6. Exceptions, Traps, and Interrupts](spec/riscv-unprivileged.html#trap-defn) 的第一段（直接贴在下面了）：
 
     > We use the term exception to refer to an unusual condition occurring at run time associated with an instruction in the current RISC-V hart. We use the term interrupt to refer to an external asynchronous event that may cause a RISC-V hart to experience an unexpected transfer of control. We use the term trap to refer to the transfer of control to a trap handler caused by either an exception or an interrupt.
 
@@ -739,88 +797,201 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
         - RISC-V 中 exception、interrupt 和 trap 有何区别？
         - 举两个 Trap 的例子
 
-请阅读 Volume II: Privileged Architecture Specification 的以下章节：
-
-- 1.2. Privilege Levels
-
-    !!! question "考点"
-
-        - 特权级是用来干什么的？
-        - 执行当前特权级不允许的操作会发生什么？
-        - M、U、S 模式分别是为了什么设计的？
-
-### RISC-V 中断、异常与 CSR 寄存器
-
-请阅读 Volume II: Privileged Architecture Specification 的以下章节：
-
-- Chapter 2. Control and Status Registers (CSRs) 的章节导言
+- 特权级手册 [Chapter 2. Control and Status Registers (CSRs)](spec/riscv-privileged.html#priv-csrs) 的章节导言
 
     !!! question "考点"
 
         - 读取、修改、写入 CSR 的指令定义在哪个扩展？
         - S 模式的 CSR 能被 M 模式访问吗？反之呢？
 
-- Chapter 3. Machine-Level ISA
+- 非特权级手册 [6. "Zicsr", Extension for Control and Status Register (CSR) Instructions, Version 2.0](spec/riscv-unprivileged.html#csrinsts)
 
-    - 3.1.6.1. Privilege and Global Interrupt-Enable Stack in **mstatus** register
+    ??? note "要点"
 
-        !!! question "考点"
+        - 掌握四个标准 CSR 指令的用法：
+            - RW: Read/Write
+            - RS: Read and Set bits
+            - RC: Read and Clear bits
+            - RWI/RSI/RCI: Immediate versions
+        - 掌握四个 CSR 伪指令的用法：
+            - R: Read
+            - W: Write
+            - S: Set bits
+            - C: Clear bits
+            - WI/SI/CI: Immediate versions
 
-            - mstatus 寄存器的作用是什么？
-            - xIE bit 的作用是什么？
-            - 运行在 S 模式且 mstatus.SIE=0，mstatus.MIE=0 时，发生中断会进入哪个模式？
-            从特权级 y 陷入到更高的特权级 x 时，xPIE、xIE 和 xPP 会如何变化？
-            - xRET 指令返回时，特权级和中断使能位会如何恢复？xPP 会设置为什么？
+### RISC-V 时钟中断
 
-        ??? note "要点"
+请阅读特权级手册的以下内容：
 
-            1. **全局中断使能位 (Global Interrupt-Enable Bits)**
+- [3.1.6.1. Privilege and Global Interrupt-Enable Stack in **mstatus** register](https://zju-os.github.io/doc/spec/riscv-privileged.html#privstack)
 
-                - `MIE` → 控制 M-mode 中断的全局使能。
-                - `SIE` → 控制 S-mode 中断的全局使能（如果 S-mode 未实现，则为只读 0）。
-                - 当在特权级 x 下执行时：
-                    - `xIE = 1` → 该特权级的中断**全局使能**。
-                    - `xIE = 0` → 该特权级的中断**全局关闭**。
-                - 更高特权级的中断始终使能；更低特权级的中断始终关闭。
+    !!! question "考点"
 
-            2. **原子性保障**
+        - mstatus 寄存器的作用是什么？
+        - xIE bit 的作用是什么？
+        - 运行在 S 模式且 mstatus.SIE=0，mstatus.MIE=0 时，发生中断会进入哪个模式？
+        - 从特权级 y 陷入到更高的特权级 x 时，xPIE、xIE 和 xPP 会如何变化？
+        - xRET 指令返回时，特权级和中断使能位会如何恢复？xPP 会设置为什么？
 
-                - `xIE` 位位于 `mstatus` 低位，可用单条 CSR 指令原子地开/关中断，确保中断处理的原子性。
+    ??? note "要点"
 
-            3. **两级中断与特权栈 (Two-Level Stack)**
+        1. **全局中断使能位 (Global Interrupt-Enable Bits)**
 
-                - **xPIE**：保存陷入前 `xIE` 的值。
-                - **xPP**：保存陷入前的特权级，M-mode 是 2 位，S-mode 是 1 位。
-                - 陷入时：
-                    - `xPIE ← xIE`
-                    - `xIE ← 0`（进入陷入时中断会被关闭）
-                    - `xPP ← y`（保存之前的特权级 y）
+            - `MIE` → 控制 M-mode 中断的全局使能。
+            - `SIE` → 控制 S-mode 中断的全局使能（如果 S-mode 未实现，则为只读 0）。
+            - 当在特权级 x 下执行时：
+                - `xIE = 1` → 该特权级的中断**全局使能**。
+                - `xIE = 0` → 该特权级的中断**全局关闭**。
+            - 更高特权级的中断始终使能；更低特权级的中断始终关闭。
 
-            4. **返回指令 xRET 的行为**
+        2. **原子性保障**
 
-                - 从陷入返回时：
-                    - `xIE ← xPIE`
-                    - 特权级 ← `xPP`
-                    - `xPIE ← 1`
-                    - `xPP ← 最低支持的特权级`（帮助检测软件管理错误）
-                - 如果返回的特权级 ≠ M，`MPRV` 被清零。
+            - `xIE` 位位于 `mstatus` 低位，可用单条 CSR 指令原子地开/关中断，确保中断处理的原子性。
 
-            5. **陷入处理的安全性要求**
+        3. **两级中断与特权栈 (Two-Level Stack)**
 
-                - 陷入处理必须避免在**关键状态保存阶段**开启中断或引发异常，避免：
-                    - 覆盖关键状态，导致恢复失败。
-                    - 陷入处理过程中出现无限递归陷入。
-                - 需要小心设计，确保异常在安全的阶段被正确处理。
+            - **xPIE**：保存陷入前 `xIE` 的值。
+            - **xPP**：保存陷入前的特权级，M-mode 是 2 位，S-mode 是 1 位。
+            - 陷入时：
+                - `xPIE ← xIE`
+                - `xIE ← 0`（进入陷入时中断会被关闭）
+                - `xPP ← y`（保存之前的特权级 y）
 
-    - 3.1.9. Machine Interrupt (mip and mie) Registers
+        4. **返回指令 xRET 的行为**
 
-        !!! question "考点"
+            - 从陷入返回时：
+                - `xIE ← xPIE`
+                - 特权级 ← `xPP`
+                - `xPIE ← 1`
+                - `xPP ← 最低支持的特权级`（帮助检测软件管理错误）
+            - 如果返回的特权级 ≠ M，`MPRV` 被清零。
 
-             - mip 和 mie 寄存器的作用分别是什么？
-             - 在什么条件下，中断会陷入 M 模式？
-             - 列举一些中断源
-             - 如果中断委派到 S 模式，它在 mip 和 mie 中的行为是什么？
-             - 为什么软件中断的优先级高于定时器中断？
+        5. **陷入处理的安全性要求**
+
+            - 陷入处理必须避免在**关键状态保存阶段**开启中断或引发异常，避免：
+                - 覆盖关键状态，导致恢复失败。
+                - 陷入处理过程中出现无限递归陷入。
+            - 需要小心设计，确保异常在安全的阶段被正确处理。
+
+- [3.1.9. Machine Interrupt (mip and mie) Registers](spec/riscv-privileged.html#_machine_interrupt_mip_and_mie_registers)
+
+    !!! question "考点"
+
+        - mip 和 mie 寄存器的作用分别是什么？
+        - 在什么条件下，中断会陷入 M 模式？
+        - 为什么软件中断的优先级高于定时器中断？
+
+    ??? note "要点"
+
+        - **基本功能**
+
+            - **mip (Machine Interrupt Pending)**：保存挂起中断的信息
+            - **mie (Machine Interrupt Enable)**：控制各类中断是否被使能
+            - **位 i** 对应中断原因编号 i（与 `mcause` 寄存器中的中断原因编号对应）
+            - **标准中断位**：只占用 **bits 15:0**，bit 16 及以上为平台自定义
+
+        - **中断触发条件**
+
+            一个中断 i 会导致陷入 M 模式，需满足以下条件：
+
+            1. 当前特权模式是 M 且 **mstatus.MIE = 1**，或当前特权模式 < M
+            2. **mip[i] = 1** 且 **mie[i] = 1**
+            3. 如果存在 **mideleg**，则 **mideleg[i] = 0**
+
+            这些条件在以下情况下必须及时重新评估：
+
+            - 中断挂起状态变化
+            - 执行 `xRET` 指令
+            - 显式写入 mip/mie/mstatus/mideleg
+
+        - **中断优先级与可写性**
+
+            - M 模式中断优先级最高
+            - 每个 mip 位可能是 **只读** 或 **可写**：
+                - 若可写，中断可通过写 0 清除挂起状态
+                - 若只读，必须通过其他机制清除挂起状态
+            - mie 中可写位：只有能挂起的中断才能在 mie 中被设置；不可写的必须为 0
+
+        - **标准中断位分配（bits 15:0）**
+
+            | 中断类型        | Pending 位  | Enable 位   | 可写性 / 来源                 |
+            | ----------- | ---------- | ---------- | ------------------------ |
+            | 外部中断 (M 级)  | mip.MEIP   | mie.MEIE   | MEIP 只读，平台中断控制器管理        |
+            | 定时器中断 (M 级) | mip.MTIP   | mie.MTIE   | MTIP 只读，通过写 mtimecmp 清除  |
+            | 软件中断 (M 级)  | mip.MSIP   | mie.MSIE   | MSIP 只读，通过内存映射寄存器设置      |
+            | 外部中断 (S 级)  | mip.SEIP   | mie.SEIE   | SEIP 可写，用于 S 模拟外部中断      |
+            | 定时器中断 (S 级) | mip.STIP   | mie.STIE   | STIP 可写，用于 S 模拟定时器中断     |
+            | 软件中断 (S 级)  | mip.SSIP   | mie.SSIE   | SSIP 可写，可由平台中断控制器设置      |
+            | 本地计数溢出中断    | mip.LCOFIP | mie.LCOFIE | Sscofpmf 扩展支持，R/W；否则恒为 0 |
+
+        - **中断优先级顺序（高 → 低）**
+
+            1. MEI (Machine External Interrupt)
+            2. MSI (Machine Software Interrupt)
+            3. MTI (Machine Timer Interrupt)
+            4. SEI (Supervisor External Interrupt)
+            5. SSI (Supervisor Software Interrupt)
+            6. STI (Supervisor Timer Interrupt)
+            7. LCOFI (Local Counter Overflow Interrupt)
+
+            设计原则：
+
+            - 高特权级中断优先于低特权级中断（支持抢占）
+            - 外部中断优先于内部中断（设备响应要求高）
+            - 软件中断优先于定时器中断（用于多核消息传递）
+
+        - **S 模式相关**（在下一节学习）
+
+            - S 模式通过 **sip / sie** 寄存器看到委派过来的中断
+            - 如果 **mideleg[i] = 1**，中断 i 被委派到 S 模式，否则 sip/sie 中对应位为 0
+
+- [3.2.1. Machine Timer **(mtime and mtimecmp)** Registers](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_timer_mtime_and_mtimecmp_registers)
+
+    !!! question "考点"
+
+    ??? note "要点"
+
+        - **mtime 寄存器**
+
+            - 平台提供一个**内存映射**的机器模式读写寄存器 `mtime`，作为实时时钟
+            - `mtime` 以**固定频率**递增，提供机制确定其周期
+            - `mtime` 溢出后会回绕
+            - 所有 RV32 和 RV64 系统中，`mtime` 都是 **64 位精度**
+
+        - **mtimecmp 寄存器与中断**
+
+            - `mtimecmp` 也是 64 位内存映射机器模式定时器比较寄存器
+            - 当 `mtime ≥ mtimecmp` 时，机器定时器中断挂起
+            - 中断会一直挂起，直到 `mtimecmp > mtime`（通常通过写入新的 mtimecmp 值实现）
+            - 中断需 **启用全局中断** 且 **mie 寄存器中 MTIE 位置 1** 才会被响应
+
+        - **设计原因与硬件特性**
+
+            - 定时器基于**挂钟时间（wall-clock time）**，支持动态电压和频率调整的处理器
+            - 实时时钟（RTC）成本高，通常系统中只有一个，且与 CPU 不在同一电压/频率域
+            - 通过内存映射而非 CSR 暴露 mtime，便于多个 hart 共享 RTC
+
+        - **低特权级与虚拟定时器**
+
+            - 低特权级没有自己的 timecmp 寄存器
+            - 机器模式软件可通过复用 `mtimecmp` 实现多个虚拟定时器
+
+        - **比较与中断行为**
+
+            - `mtime` 与 `mtimecmp` 比较结果的变化会最终反映到 **MTIP**，但可能有延迟
+            - 可能出现**伪中断**：处理程序刚写入 `mtimecmp` 后立即返回时，中断可能还未清除
+
+        - **RV32 和 RV64 的区别**
+
+            - **RV32**：写入 `mtimecmp` 时需分两次写 32 位值，避免因中间值过小而触发伪中断
+            - **RV64**：支持自然对齐的 64 位原子访问，简化写入操作
+
+        - **time 与 timeh CSR**
+
+            - `time` 是 `mtime` 的只读影子寄存器
+            - RV32 下，`timeh` 影射高 32 位，`time` 影射低 32 位
+            - `mtime` 变化会最终反映在 `time`/`timeh`，但可能有延迟
 
 ### Task3：开启时钟中断
 
