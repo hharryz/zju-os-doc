@@ -776,9 +776,9 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 
 ## Part 2：时钟中断及其处理
 
-### RISC-V 特权级、中断与异常、CSR 寄存器
+### 特权级、中断与异常
 
-请阅读以下材料：
+首先，让我们了解特权级、中断与异常的概念：
 
 - 特权级手册 [1.2. Privilege Levels](spec/riscv-privileged.html#_privilege_levels)：
 
@@ -794,35 +794,12 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 
     !!! question "考点"
 
-        - RISC-V 中 exception、interrupt 和 trap 有何区别？
-        - 举两个 Trap 的例子
+        - RISC-V 中 exception、interrupt 有何异同？
+        - Trap 是什么意思？举两个 Trap 的例子
 
-- 特权级手册 [Chapter 2. Control and Status Registers (CSRs)](spec/riscv-privileged.html#priv-csrs) 的章节导言
+### CSR 寄存器
 
-    !!! question "考点"
-
-        - 读取、修改、写入 CSR 的指令定义在哪个扩展？
-        - S 模式的 CSR 能被 M 模式访问吗？反之呢？
-
-- 非特权级手册 [6. "Zicsr", Extension for Control and Status Register (CSR) Instructions, Version 2.0](spec/riscv-unprivileged.html#csrinsts)
-
-    ??? note "要点"
-
-        - 掌握四个标准 CSR 指令的用法：
-            - RW: Read/Write
-            - RS: Read and Set bits
-            - RC: Read and Clear bits
-            - RWI/RSI/RCI: Immediate versions
-        - 掌握四个 CSR 伪指令的用法：
-            - R: Read
-            - W: Write
-            - S: Set bits
-            - C: Clear bits
-            - WI/SI/CI: Immediate versions
-
-### RISC-V 时钟中断
-
-请阅读特权级手册的以下内容：
+接下来让我们了解 CSR 寄存器。它们是 RISC-V CPU 中的一系列特殊寄存器，能够反映和控制 CPU 当前的状态和执行机制。我们先了解 M 模式的 CSR 寄存器：
 
 - [3.1.6.1. Privilege and Global Interrupt-Enable Stack in **mstatus** register](https://zju-os.github.io/doc/spec/riscv-privileged.html#privstack)
 
@@ -874,7 +851,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
                 - 陷入处理过程中出现无限递归陷入。
             - 需要小心设计，确保异常在安全的阶段被正确处理。
 
-- [3.1.9. Machine Interrupt (mip and mie) Registers](spec/riscv-privileged.html#_machine_interrupt_mip_and_mie_registers)
+- [3.1.9. Machine Interrupt **(mip and mie)** Registers](spec/riscv-privileged.html#_machine_interrupt_mip_and_mie_registers)
 
     !!! question "考点"
 
@@ -946,83 +923,207 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
             - S 模式通过 **sip / sie** 寄存器看到委派过来的中断
             - 如果 **mideleg[i] = 1**，中断 i 被委派到 S 模式，否则 sip/sie 中对应位为 0
 
-- [3.2.1. Machine Timer **(mtime and mtimecmp)** Registers](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_timer_mtime_and_mtimecmp_registers)
+- [3.1.7. Machine Trap-Vector Base-Address (**mtvec**) Register](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_trap_vector_base_address_mtvec_register)
 
     !!! question "考点"
 
+        - mtvec 寄存器的作用是什么？
+        - 为什么这个寄存器的低两位可以分配给 MODE 字段？
+        - 向量中断模式下，发生中断后 PC 会被设置成多少？
+
+- [3.1.14. Machine Exception Program Counter (mepc) Register](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_exception_program_counter_mepc_register) 和 [3.1.15. Machine Cause (mcause) Register](https://zju-os.github.io/doc/spec/riscv-privileged.html#mcause) 和 [3.1.16. Machine Trap Value (mtval) Register](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_trap_value_mtval_register)
+
+    !!! question "考点"
+
+        - mepc 寄存器的作用是什么？
+        - mcause 寄存器的作用是什么？
+        - mcause 寄存器中，中断和异常的区别是什么？
+        - mtval 寄存器的作用是什么？什么时候它的值才有意义？
+
+总结一下，我们学习了 M 模式的几个关键 CSR 寄存器：`mstatus`、`mip`、`mie`、`mtvec`、`mepc`、`mcause` 和 `mtval`。S 模式也有几个对应的 CSR 寄存器：`sstatus`、`sip`、`sie`、`stvec`、`sepc`、`scause` 和 `stval`。它们的作用和 M 模式类似，请同学们在后续实验用到时自行阅读 [12.1. Supervisor CSRs](https://zju-os.github.io/doc/spec/riscv-privileged.html#_supervisor_csrs)。
+
+### 特权指令
+
+然后，M 模式有几个特权指令。请阅读 [3.3.2. Trap-Return Instructions](spec/riscv-privileged.html#otherpriv)。
+
+!!! question "考点"
+
+    - xRET 指令的作用是什么？
+    - xRET 指令执行后，特权级和中断使能位会如何变化？PC 的值会如何变化？
+
+### Zicsr 扩展
+
+最后，我们将阅读 Zicsr 扩展，了解如何操控 CSR 寄存器。
+
+- 特权级手册 [Chapter 2. Control and Status Registers (CSRs)](spec/riscv-privileged.html#priv-csrs) 的章节导言
+
+    !!! question "考点"
+
+        - 读取、修改、写入 CSR 的指令定义在哪个扩展？
+        - S 模式的 CSR 能被 M 模式访问吗？反之呢？
+
+- 非特权级手册 [6. "Zicsr", Extension for Control and Status Register (CSR) Instructions, Version 2.0](spec/riscv-unprivileged.html#csrinsts)
+
     ??? note "要点"
 
-        - **mtime 寄存器**
+        - 掌握四个标准 CSR 指令的用法：
+            - RW: Read/Write
+            - RS: Read and Set bits
+            - RC: Read and Clear bits
+            - RWI/RSI/RCI: Immediate versions
+        - 掌握四个 CSR 伪指令的用法：
+            - R: Read
+            - W: Write
+            - S: Set bits
+            - C: Clear bits
+            - WI/SI/CI: Immediate versions
 
-            - 平台提供一个**内存映射**的机器模式读写寄存器 `mtime`，作为实时时钟
-            - `mtime` 以**固定频率**递增，提供机制确定其周期
-            - `mtime` 溢出后会回绕
-            - 所有 RV32 和 RV64 系统中，`mtime` 都是 **64 位精度**
+### Task3：中断处理
 
-        - **mtimecmp 寄存器与中断**
+- 补全 `arch/riscv/include/sbi.h` 中的 `csr_read()` 和 `csr_write()` 函数。
+- 在 `start_kernel()` 中：
 
-            - `mtimecmp` 也是 64 位内存映射机器模式定时器比较寄存器
-            - 当 `mtime ≥ mtimecmp` 时，机器定时器中断挂起
-            - 中断会一直挂起，直到 `mtimecmp > mtime`（通常通过写入新的 mtimecmp 值实现）
-            - 中断需 **启用全局中断** 且 **mie 寄存器中 MTIE 位置 1** 才会被响应
+    - 读取 `sstatus`，打印其值
+    - 设置 `ssip`，触发一个软件中断
 
-        - **设计原因与硬件特性**
+- 在 `head.S` 中，将 `stvec` 指向 `_trap`
+- 在 `entry.S` 中，补全 `_trap` 处理函数
 
-            - 定时器基于**挂钟时间（wall-clock time）**，支持动态电压和频率调整的处理器
-            - 实时时钟（RTC）成本高，通常系统中只有一个，且与 CPU 不在同一电压/频率域
-            - 通过内存映射而非 CSR 暴露 mtime，便于多个 hart 共享 RTC
+!!! success "完成条件"
 
-        - **低特权级与虚拟定时器**
+    - 成功看到 `sstatus` 的值。
+    - 成功进入中断处理程序，打印对应的信息。
+    - 成功从中断程序退出，返回 `start_kernel()` 并继续执行，打印 `Hello, ZJU OS 2025!`。
+    - 通过评测框架的 `lab1-task3` 测试。
 
-            - 低特权级没有自己的 timecmp 寄存器
-            - 机器模式软件可通过复用 `mtimecmp` 实现多个虚拟定时器
+### 时钟中断
 
-        - **比较与中断行为**
+阅读 [3.2.1. Machine Timer **(mtime and mtimecmp)** Registers](spec/riscv-privileged.html#_machine_timer_mtime_and_mtimecmp_registers)，了解 RISC-V 的时钟中断机制：
 
-            - `mtime` 与 `mtimecmp` 比较结果的变化会最终反映到 **MTIP**，但可能有延迟
-            - 可能出现**伪中断**：处理程序刚写入 `mtimecmp` 后立即返回时，中断可能还未清除
+!!! question "考点"
 
-        - **RV32 和 RV64 的区别**
+??? note "要点"
 
-            - **RV32**：写入 `mtimecmp` 时需分两次写 32 位值，避免因中间值过小而触发伪中断
-            - **RV64**：支持自然对齐的 64 位原子访问，简化写入操作
+    - **mtime 寄存器**
 
-        - **time 与 timeh CSR**
+        - 平台提供一个**内存映射**的机器模式读写寄存器 `mtime`，作为实时时钟
+        - `mtime` 以**固定频率**递增，提供机制确定其周期
+        - `mtime` 溢出后会回绕
+        - 所有 RV32 和 RV64 系统中，`mtime` 都是 **64 位精度**
 
-            - `time` 是 `mtime` 的只读影子寄存器
-            - RV32 下，`timeh` 影射高 32 位，`time` 影射低 32 位
-            - `mtime` 变化会最终反映在 `time`/`timeh`，但可能有延迟
+    - **mtimecmp 寄存器与中断**
 
-### Task3：开启时钟中断
+        - `mtimecmp` 也是 64 位内存映射机器模式定时器比较寄存器
+        - 当 `mtime ≥ mtimecmp` 时，机器定时器中断挂起
+        - 中断会一直挂起，直到 `mtimecmp > mtime`（通常通过写入新的 mtimecmp 值实现）
+        - 中断需 **启用全局中断** 且 **mie 寄存器中 MTIE 位置 1** 才会被响应
 
-### RISC-V 中断异常委派
+    - **设计原因与硬件特性**
 
-请阅读 Volume II: Privileged Architecture Specification 的以下章节：
+        - 定时器基于**挂钟时间（wall-clock time）**，支持动态电压和频率调整的处理器
+        - 实时时钟（RTC）成本高，通常系统中只有一个，且与 CPU 不在同一电压/频率域
+        - 通过内存映射而非 CSR 暴露 mtime，便于多个 hart 共享 RTC
 
-- Chapter 3. Machine-Level ISA
+    - **低特权级与虚拟定时器**
 
-    - 3.1.7. Machine Trap-Vector Base-Address (**mtvec**) Register
+        - 低特权级没有自己的 timecmp 寄存器
+        - 机器模式软件可通过复用 `mtimecmp` 实现多个虚拟定时器
 
-        !!! question "考点"
+    - **比较与中断行为**
 
-             - mtvec 寄存器的作用是什么？
-             - 为什么这个寄存器的低两位可以分配给 MODE 字段？
-             - 向量中断模式下，发生中断后 PC 会被设置成多少？
+        - `mtime` 与 `mtimecmp` 比较结果的变化会最终反映到 **MTIP**，但可能有延迟
+        - 可能出现**伪中断**：处理程序刚写入 `mtimecmp` 后立即返回时，中断可能还未清除
 
-    - 3.1.8. Machine Trap Delegation (**medeleg** and **mideleg**) Registers
+    - **RV32 和 RV64 的区别**
 
-        !!! question "考点"
+        - **RV32**：写入 `mtimecmp` 时需分两次写 32 位值，避免因中间值过小而触发伪中断
+        - **RV64**：支持自然对齐的 64 位原子访问，简化写入操作
 
-             - 为什么需要委派机制？
-             - medeleg 和 mideleg 寄存器的作用分别是什么？
-             - 当一个 trap 被委派到 S 模式后，下面这些地方的值会如何变化？
-                 - scause
-                 - stval
-                 - sepc
-                 - mstatus.SPP
-                 - mstatus.SPIE
-                 - mstatus.SIE
-             - 如果一个 trap 是在 M 模式下发生的，但它在 medeleg 中已被设置委派给 S 模式，会在哪里处理？
-             - mideleg 中的某一位被设置后，这个中断在 M 模式下会被触发吗？
+    - **time 与 timeh CSR**
 
-### Task4：实现中断处理程序
+        - `time` 是 `mtime` 的只读影子寄存器
+        - RV32 下，`timeh` 影射高 32 位，`time` 影射低 32 位
+        - `mtime` 变化会最终反映在 `time`/`timeh`，但可能有延迟
+
+很可惜 `mtime` 和 `mtimecmp` 仅供 M 模式使用，让 OpenSBI 等 M 模式软件能够感知时间流逝。那我们的系统呢？第一时间想到 SBI 是否有提供相关服务。
+
+阅读 [SBI 手册](spec/riscv-sbi.pdf) 中的 Chapter 6. Timer Extension (EID #0x54494D45 "TIME")，了解如何使用 SBI 提供的定时器服务。
+
+!!! note "要点：SBI Timer Extension"
+
+    **核心函数：`sbi_set_timer` (FID #0)**
+
+    - **功能：**设置下一次定时器事件的触发时间，参数为 **绝对时间（`stime_value`）**。
+    - **清除定时器中断的两种方法：**
+
+        1. 设置 `stime_value = (uint64_t)-1` → 定时器中断触发在“无限未来”。
+        2. 通过清除 `sie.STIE` 位 → 屏蔽定时器中断。
+
+    - **自动清中断：**
+
+        无论是否屏蔽定时器中断，只要设置了未来的时间，函数都会清除当前挂起的定时器中断。
+
+我们从标准中了解到 SBI 的定时器服务是 M 模式软件（如 OpenSBI）通过复用 `mtimecmp` 模拟实现的，效率太低了。因此 RISC-V 定义了 SSTC 扩展解决这一问题。请你阅读 [20. "Sstc" Extension for Supervisor-mode Timer Interrupts, Version 1.0](spec/riscv-privileged.html#Sstc) 的第一节 [20.1. Machine and Supervisor Level Additions](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_and_supervisor_level_additions)，具体了解新增 SSTC 扩展后的时钟中断机制。
+
+!!! note "要点：SSTC 扩展"
+
+    该扩展提高了 S 模式定时器中断的性能。未提供该扩展时，S/HS 模式的时钟中断机制是由 M 模式软件（如 OpenSBI）通过复用 `mtimecmp` 模拟实现的。
+
+    该扩展主要内容包括：
+
+    - **新增 CSR 寄存器**
+
+        - `smtimecmp`：S 模式定时器比较寄存器
+        - S 模式时钟中断挂起条件：`time` ≥ `smtimecmp`（还记得 `time` 对应哪个 M 模式寄存器吗？）
+
+    - **修改相关寄存器描述**
+
+        - `mip/mie`：定义 S 级定时器中断挂起与使能位（STIP/STIE）。
+        - `sip/sie`：反映 S 级定时器中断状态，直接由 `stimecmp` 控制。
+        - `mcounteren`：允许或禁止 S 模式访问 `stimecmp` / `vstimecmp`。
+
+QEMU 已经支持 SSTC 扩展，因此你可以通过直接写 `csrw smtimecmp, a0` 来设置 S 模式的定时器中断了。但是，为了兼容性考虑，我们仍然应当使用 SBI 提供的定时器服务。
+
+!!! example "动手做"
+
+    阅读 OpenSBI 源码，了解 OpenSBI 是如何实现 `sbi_set_timer()` 函数的：
+
+    - [`lib/sbi/sbi_ecall_time.c`](https://github.com/riscv-software-src/opensbi/blob/master/lib/sbi/sbi_ecall_time.c) 的 `sbi_ecall_set_timer()` 函数
+    - [`lib/sbi/sbi_timer.c`](https://github.com/riscv-software-src/opensbi/blob/master/lib/sbi/sbi_timer.c) 的 `sbi_timer_event_start()` 函数
+
+    请你指出：
+
+    - 当平台支持 SSTC 扩展时，OpenSBI 会如何设置定时器？
+    - 当平台不支持 SSTC 扩展时，OpenSBI 如何进行定时器多路复用？
+
+### Task4：开启并处理 S 模式时钟中断
+
+- 在 `start_kernel()` 中，使用 `sbi_set_timer()` 将定时器设置为 `0`，这样会立刻触发一次时钟中断
+- 在 `trap_handler()` 中，添加对时钟中断的处理，打印对应的信息，并再次使用 `sbi_set_timer()` 设置下一次时钟中断（比如 `time() + 1000000`）
+
+!!! success "完成条件"
+
+    - 成功看到控制台读秒输出。
+    - 通过评测框架的 `lab1-task4` 测试。
+
+## 附录：中断异常委派
+
+本实验的阅读量已经非常大了，因此本附录不作要求。
+
+中断异常委派机制的目的类似 SSTC 扩展，都是为了提高特权级中断异常处理的性能。请你阅读 [3.1.8. Machine Trap Delegation (**medeleg** and **mideleg**) Registers](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_trap_delegation_medeleg_and_mideleg_registers) ，了解中断异常委派机制。
+
+你可以思考以下问题：
+
+- 为什么需要委派机制？
+- medeleg 和 mideleg 寄存器的作用分别是什么？
+- 当一个 trap 被委派到 S 模式后，下面这些地方的值会如何变化？
+    - scause
+    - stval
+    - sepc
+    - mstatus.SPP
+    - mstatus.SPIE
+    - mstatus.SIE
+- 如果一个 trap 是在 M 模式下发生的，但它在 medeleg 中已被设置委派给 S 模式，会在哪里处理？
+- mideleg 中的某一位被设置后，这个中断在 M 模式下会被触发吗？
+
+OpenSBI 的输出中包含了 `medeleg` 和 `mideleg` 的值，你可以尝试分析一下它们的含义。
