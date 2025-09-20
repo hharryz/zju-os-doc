@@ -1139,11 +1139,6 @@ QEMU 已经支持 SSTC 扩展，因此你可以通过直接写 `csrw smtimecmp, 
 
 ### Task4：开启并处理 S 模式时钟中断
 
-- 在 `start_kernel()` 中，使用 `sbi_set_timer()` 将定时器设置为 `0`，这样会立刻触发一次时钟中断
-- 在 `trap_handler()` 中，添加时钟中断的处理：
-    - 打印当前机器时间（秒）
-    - 使用 `sbi_set_timer()` 设置下一次时钟中断到一秒后
-
 关于时间：
 
 - 对于 QEMU RISC-V virt 机器，`time` 的频率是 10MHz，OpenSBI 帮你通过设备接口查询了：
@@ -1152,10 +1147,26 @@ QEMU 已经支持 SSTC 扩展，因此你可以通过直接写 `csrw smtimecmp, 
     Platform Timer Device       : aclint-mtimer @ 10000000Hz
     ```
 
-- `rdtime` 是一个伪指令，请自行查阅资料了解它的作用
+- [POSIX 标准](https://pubs.opengroup.org/onlinepubs/009695099/functions/clock.html) 定义了：
+    - `CLOCKS_PER_SEC` 常量：表示每秒的时钟滴答数（Clocks），在 POSIX 标准中要求为 1000000（1M）
+    - `clock()` 函数：返回自进程启动以来，过去的时钟滴答数
+    - 也就是说，要将 `clock()` 返回的值转换为秒，需要用返回值除以 `CLOCKS_PER_SEC` 宏的值
 - 思考：经过多久时间 `time` 会回绕？
+
+你的任务：
+
+- 在 `start_kernel()` 中，使用 `sbi_set_timer()` 将定时器设置为 `0`，这样会立刻触发一次时钟中断
+
+    因为没有重新设置 `stimecmp`，所以时钟中断会一直触发。你会看到控制台不停地打印。
+
+- 在 `trap_handler()` 中，添加时钟中断的处理：使用 `sbi_set_timer()` 设置下一次时钟中断到一秒后
+
+    现在你会看到控制台每秒打印一次时钟中断。
+
+- 在 `clock.c` 中实现 POSIX 标准的 `clock()` 函数
+
+    现在 `start_kernel()` 应该能正确对循环进行计时了
 
 !!! success "完成条件"
 
-    - 成功看到控制台读秒输出。
     - 通过评测框架的 `lab1-task4` 测试。
