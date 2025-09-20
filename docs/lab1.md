@@ -52,6 +52,16 @@
 
     所有的实验内容都不需要记背 😂。那些技术细节并不重要，都写在标准里，知道要用的时候在哪看就可以了。关键在整体理解，这也是助教验收时的考察重点。
 
+## Part 0：合并代码
+
+现在你位于 `lab0` 分支。你需要创建 `lab1` 分支，合并上游的代码：
+
+```shell
+git checkout -b lab1
+git fetch upstream
+git merge upstream/lab1
+```
+
 ## Part 1：启动工作
 
 ### RISC-V 汇编与调用约定
