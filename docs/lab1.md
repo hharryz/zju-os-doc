@@ -11,13 +11,13 @@
 - 在实验导读和 Lab0 中，我们已经了解了启动过程：
 
     - OpenSBI 跳转到内核第一条指令处。
-    - `arch/riscv/boot.S` 是内核最开始执行的代码。查看它，你会发现它最终执行了 `call start_kernel`。这个函数位于 `arch/riscv/init/main.c`，是一个 **C 语言写的函数**。
+    - `arch/riscv/boot.S` 是内核最开始执行的**汇编代码**。查看它，你会发现它最终执行了 `tail start_kernel` 跳转到位于 `arch/riscv/init/main.c` 的 **C 语言代码**。
 
     那么有如下问题：
 
     - 从 OpenSBI 跳到内核时，系统的状态（寄存器、内存等）是什么样的？这需要你动手调试，用 Lab0 学习的 QEMU Monitor 和 GDB 自行查看。
     - 从汇编代码跳到 C 函数，调用者、被调用者各需要做什么工作？回忆《计算机组成》课程，我们学习过汇编与 C 语言的关系。这需要你学习**RISC-V 调用约定**，然后补全 `arch/riscv/boot.S`。
-    - 如何控制内核最开始执行的代码放置的位置？这需要你学习**链接器脚本**，然后理解 `arch/riscv/kernel/vmlinux.lds`。
+    - 如何控制内核代码、数据放置的位置？这需要你学习**链接器脚本**，然后理解 `arch/riscv/kernel/vmlinux.lds`。
     - 没有了标准库，打印字符等基本功能如何实现？这需要你学习**SBI 规范**，然后补全 `arch/riscv/kernel/sbi.c`。
 
 完成这些，你就能够启动自己的内核，并打印 `Hello, ZJU-OS!` 了。
@@ -84,14 +84,14 @@
 
 ??? note "要点"
 
-    ??? note "参数寄存器与返回值"
+    - **参数寄存器与返回值**
 
         - RISC-V 提供 **8 个参数寄存器 a0–a7**：
             - **a0、a1**：用于返回值
             - **a2–a7**：用于传递参数，超出部分放在栈上
         - 超过寄存器数量的参数会通过**栈**传递
 
-    ??? note "参数传递规则"
+    - **参数传递规则**
 
         **标量（Scalars）**
 
@@ -107,37 +107,37 @@
         - **≤ 2 × XLEN 位**：双寄存器传递，若寄存器不足，剩余部分放栈上
         - **> 2 × XLEN 位**：按引用传递（传地址）
 
-    ??? note "栈对齐和栈传参"
+    - **栈对齐和栈传参**
 
         - 栈指针（SP）必须在**函数入口时 128-bit 对齐**
         - 参数在栈上的布局按 **≥ type alignment 和 XLEN 对齐**，但不会超过栈本身的对齐要求
         - 传栈的第一个参数在 SP + 0 位置，之后依次递增
 
-    ??? note "变参函数（Variadic Functions）"
+    - **变参函数（Variadic Functions）**
 
         - 变参与命名参数传递方式相同
         - 特殊规则：
             - **2 × XLEN 位对齐**的参数必须使用**偶数号寄存器对**
             - 一旦有参数被传到栈上，之后的参数都必须放栈上
 
-    ??? note "返回值"
+    - **返回值**
 
         - 返回值的传递方式 = 该类型第一个命名参数的传递方式
         - 如果是按引用传递的，调用者分配空间，传地址，callee 写结果
 
-    ??? note "结构体对齐与位域规则"
+    - **结构体对齐与位域规则**
 
         - 小于一个 XLEN 的结构体直接放在寄存器里，按内存布局排列字段
         - 位域按小端序（little-endian）打包：
             - 如果跨越对齐边界，跳到下一个对齐边界
             - 多余位按 padding 处理
 
-    ??? note "寄存器保存规则"
+    - **寄存器保存规则**
 
         - **s0–s11** 必须在函数调用间保持（callee-save）
         - **临时寄存器 t0–t6、a0–a7** 调用不保证保存（caller-save）
 
-此外，除了基本的 I 指令集，我们在汇编时还经常使用一些**伪指令（pseudo-instruction）**，它们并不是 RISC-V 指令集的一部分，而是汇编器提供的方便写代码的语法糖。伪指令会被汇编器翻译成一个或多个真实的指令。
+此外，除了基本的 I 指令集，我们在汇编时还经常使用一些**伪指令（pseudo-instruction）**。它们并不是 RISC-V ISA 中真实的指令，而是汇编语言的语法糖。伪指令会被汇编器翻译成一个或多个真实的指令。
 
 请阅读 [RISC-V 汇编手册](spec/riscv-asm.pdf) 的以下章节，学习常用的伪指令：
 
@@ -145,8 +145,13 @@
 
 !!! question "考点"
 
-    - `li`、`la`、`mv`、`j`、`ret` 等伪指令分别对应什么真实指令？
-    - `call` 伪指令做了什么工作？它与 `jal` 指令有什么区别？
+    - 下列伪指令分别对应什么真实指令？
+
+        ```text
+        la nop li mv j ret call tail
+        ```
+
+    - `call` 伪指令做了什么工作？它与 `tail` 指令有什么区别？
 
 ### 汇编器指令
 
@@ -161,20 +166,16 @@
 - [7.65 .macro](https://sourceware.org/binutils/docs/as.html#g_t_002emacro)
 - [7.94 .space size [,fill]](https://sourceware.org/binutils/docs/as.html#g_t_002espace-size-_005b_002cfill_005d)
 
-??? note "要点"
+??? note "要点：汇编器指令"
 
-    ??? note "Symbols 基础概念"
+    - **Symbols 基础概念**
 
-        - **符号（Symbol）的作用**
-            - 程序员用符号命名；链接器用符号做链接；调试器用符号调试。
-            - 符号在目标文件中的顺序可能与声明顺序不同，这可能影响某些调试器。
+        - 程序员用符号命名；链接器用符号做链接；调试器用符号调试。
+        - 符号用于命名程序中的地址或数据位置。
+        - 可以代表位置计数器、常量值或程序中定义的标签。
+        - 支持多种类型：全局符号、本地符号、局部**标签（Label）**等。
 
-        - **符号的核心功能**
-            - 命名程序中的地址或数据位置。
-            - 可以代表位置计数器、常量值或程序中定义的标签。
-            - 支持多种类型：全局符号、本地符号、局部标签等。
-
-    ??? note "5.1 Labels"
+    - **Labels**
 
         - **标签的定义**
             - `symbol:` 定义标签，表示当前位置计数器的值。
@@ -187,27 +188,21 @@
         - **美元标签（Dollar Labels）**
             - 形式如 `55$:`，作用范围更小，遇到非本地标签就失效。
 
-    ??? note "5.2 Giving Symbols Other Values"
+    - **符号赋值**
+        - 形式：`symbol = expression` 等价于 `.set`，`symbol == expression` 等价于 `.eqv`。
+        - 可以把符号赋值为任意表达式结果。
 
-        - **符号赋值**
-            - 形式：`symbol = expression` 等价于 `.set`，`symbol == expression` 等价于 `.eqv`。
-            - 可以把符号赋值为任意表达式结果。
+    - **符号命名规则**
+        - 以字母或 `._` 开头，支持 `$`，大小写敏感。
+        - 不以数字开头，除非是本地标签。
+        - 支持多字节字符，但可能受编译器或系统限制。
 
-    ??? note "5.3 Symbol Names"
+    - **`.` 符号**
+        - 表示当前位置计数器。
+        - `melvin: .long .` → 定义 `melvin` 为其自身地址。
+        - 赋值 `.=.+4` 等价于 `.org` 指令，跳过 4 字节。
 
-        - **命名规则**
-            - 以字母或 `._` 开头，支持 `$`，大小写敏感。
-            - 不以数字开头，除非是本地标签。
-            - 支持多字节字符，但可能受编译器或系统限制。
-
-    ??? note "5.4 The Special Dot Symbol"
-
-        - **`.` 符号**
-            - 表示当前位置计数器。
-            - `melvin: .long .` → 定义 `melvin` 为其自身地址。
-            - 赋值 `.=.+4` 等价于 `.org` 指令，跳过 4 字节。
-
-    ??? note "常见汇编器指令"
+    - **常见汇编器指令**
 
         - **`.align n`**：将位置计数器对齐到 n 字节边界。
         - **`.global symbol` / `.globl symbol`**：导出符号给链接器 `ld` 使用。
@@ -217,18 +212,15 @@
 
 ### 链接器脚本与内核内存布局
 
-在 C 语言编程课上，我们了解过编译器的基本流程：预处理、编译、汇编、链接，`gcc` 默认帮你完成了所有流程。拆解开来流程示例如下：
+在 C 语言编程课上，我们了解过编译器的基本流程：预处理、编译、汇编、链接，`gcc` 默认帮你完成了所有流程。假设程序由两个源文件 `main.c` 和 `func.c` 组成，拆分后的流程示例如下：
 
 ```shell
-# 编译生成 RISC-V 汇编代码 main.S
-riscv64-linux-gnu-gcc -S main.c -o main.S
-# 汇编生成 RISC-V 目标文件 main.o
+riscv64-linux-gnu-cpp main.c -o main.i
+riscv64-linux-gnu-gcc -S main.i -o main.S
 riscv64-linux-gnu-as main.S -o main.o
-# 编译生成 RISC-V 汇编代码 func.S
-riscv64-linux-gnu-gcc -S func.c -o func.S
-# 汇编生成 RISC-V 目标文件 func.o
+riscv64-linux-gnu-cpp func.c -o func.i
+riscv64-linux-gnu-gcc -S func.i -o func.S
 riscv64-linux-gnu-as func.S -o func.o
-# 链接 main.o 和 func.o 生成可执行文件 main
 riscv64-linux-gnu-ld main.o func.o -o main
 ```
 
@@ -245,11 +237,11 @@ riscv64-linux-gnu-ld --verbose
 - 3.5 [Assigning Values to Symbols](https://sourceware.org/binutils/docs/ld.html#Assigning-Values-to-Symbols)
 - 3.6.1 [Output Section Description](https://sourceware.org/binutils/docs/ld.html#Output-Section-Description-1)
 
-??? note "要点"
+??? note "要点：链接器脚本"
 
     下面的要点中，**源码中的符号引用**非常重要，在后续写 C 代码时会用到。
 
-    ??? note "Linker Script 基础概念"
+    - **Linker Script 基础概念**
 
         1. **目标文件（Object File）**
 
@@ -285,7 +277,7 @@ riscv64-linux-gnu-ld --verbose
             - 链接器使用 `.` 来表示当前内存位置。
             - 每定义一个输出节，`.` 会自动增加节大小。
 
-    ??? note "Linker Script 文件格式"
+    - **Linker Script 文件格式**
 
         - LD Script 是文本文件。
         - 支持 **注释**：
@@ -300,7 +292,7 @@ riscv64-linux-gnu-ld --verbose
             - 符号赋值，例如 `BASE_ADDR = 0x80000000`
             - 使用 `SECTIONS` 定义输出节布局。
 
-    ??? note "SECTIONS 指令"
+    - **SECTIONS 指令**
 
         `SECTIONS` 是最核心的命令，用于描述输出文件的内存布局。示例：
 
@@ -322,9 +314,9 @@ riscv64-linux-gnu-ld --verbose
         - `.data` 和 `.bss` 同理。
         - 链接器会保证输出节按需对齐，如果地址不符合要求，会在节之间插入间隙。
 
-    ??? note "符号赋值"
+    - **符号赋值**
 
-        ??? note "符号赋值的基本概念"
+        - **符号赋值的基本概念**
 
             - 在链接脚本（linker script）中可以给符号（symbol）赋值，定义它并把它加入符号表，作用域为全局。
             - 赋值语句形式：
@@ -340,7 +332,7 @@ riscv64-linux-gnu-ld --verbose
             - 第一次赋值会定义符号，后续的 +=, -= 等操作要求符号已存在。
             - `.` 表示位置计数器（location counter），只能在 `SECTIONS` 中使用。
 
-        ??? note "三种赋值位置"
+        - **三种赋值位置**
 
             符号赋值可以出现在：
 
@@ -369,7 +361,7 @@ riscv64-linux-gnu-ld --verbose
             - `_bdata = (. + 3) & ~3` → 定义为 4 字节对齐的 `.text` 末尾地址
 
 
-        ??? note "PROVIDE"
+        - **PROVIDE**
 
             - `PROVIDE(symbol = expression)`
             - 仅在**符号被引用且未被定义**时才定义，避免与用户代码冲突。
@@ -385,7 +377,7 @@ riscv64-linux-gnu-ld --verbose
             }
             ```
 
-        ??? note "源码中的符号引用"
+        - **源码中的符号引用**
 
             - 链接脚本符号 ≠ C 语言变量，**没有实际内存分配**，只是一个地址。
             - 在汇编代码中直接作为地址使用：
@@ -439,8 +431,6 @@ SECTIONS
 
 </div>
 
-关键要点：
-
 - **起始位置**：应用程序为 `0x10000 + SIZEOF_HEADERS`，而内核是 `0xffffffff80000000`。学习虚拟内存后你会理解这些地址受[操作系统内存布局](https://docs.kernel.org/arch/riscv/vm-layout.html)影响。
 - **对齐：**内核对齐要求十分严格，通常使用页面对齐（4KB 或 2MB 等）、缓存行对齐（64B）等，需要考虑内存分页、NUMA 架构 Cache 一致性等问题（回忆你在《计算机体系结构》课程中学习的相关知识）。
 - **节的选择**：内核不使用[动态链接](https://lwn.net/Articles/961117/)、[重定位](https://dram.page/p/relative-relocs-explained/)，这些技术是为了应用程序设计的。因此没有 `.dynsym`、`.rela.dyn` 等节。
@@ -453,7 +443,7 @@ SECTIONS
     /usr/lib/gcc-cross/riscv64-linux-gnu/15/../../../../riscv64-linux-gnu/bin/ld: warning: cannot find entry symbol _start; defaulting to 000000000000030a
     ```
 
-!!! note "要点"
+!!! note "要点：内核链接脚本"
 
     `vmlinux` 与普通应用程序的异同：
 
@@ -481,13 +471,13 @@ SECTIONS
 - 阅读 `Makefile`，找到相关命令
 - 阅读 [objcopy (GNU Binary Utilities)](https://sourceware.org/binutils/docs/binutils/objcopy.html) 的简介部分，理解它生成 binary 时做了什么工作
 
-!!! note "要点"
+!!! note "要点：固件加载内存镜像"
 
     `objcopy -O binary` 从 ELF 格式的可执行文件中直接把程序要运行的那部分指令和数据，原封不动拷贝出来，得到一个内存布局和运行时完全一致的二进制文件，称为内存镜像（memory dump）。
 
     固件（如 OpenSBI）非常简单，在启动时只负责把这段二进制文件搬到一个固定的内存地址，然后直接跳过去执行，并不支持解析 ELF 等格式。
 
-    你将在 Lab4 中完成 ELF 文件的解析和加载。
+    你将在 Lab4 中完成 ELF 文件的解析和加载，以运行用户态程序。
 
 此外，构建过程还会生成几个文件用于辅助调试，遇到问题时好好利用它们：
 
@@ -531,6 +521,7 @@ Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (
     用 VSCode 打开 `kernel/arch/riscv/kernel/Image`（已默认绑定到 Hex Editor 插件），查看它的内容。你会发现其中有一大块全是 0 的区域，这就是我们为 C 函数预留的栈空间。
 
     - 这一部分的起始和结束位置是多少？在 `System.map` 中能找到对应的符号吗？（提示：`Image` 的起始位置是 `0x80200000`，记得加上这个偏移）
+    - 这部分空间是如何开辟的？指出具体代码。
     - 为什么选择在 `.bss` 段开辟栈空间？（提示：栈的增长方向是？）
 
 !!! info "更多资料"
@@ -543,8 +534,8 @@ Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (
 
 现在你已经知道：
 
-- OpenSBI 跳转到内核时，`sp` 指向的位置没法读写
-- 内核的栈应该放在 `.bss.stack` 段中
+- OpenSBI 跳转到内核时，`sp` 指向 OpenSBI 保护的区域，无法使用
+- 我们在内核中开辟了一段栈空间
 - 汇编代码中可以引用链接脚本定义的符号
 
 你的任务是修改 `arch/riscv/head.S`，让 `start_kernel()` 函数能够成功执行。
@@ -565,9 +556,9 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 
 ??? note "要点"
 
-    ??? note "Extended Asm"
+    - **Extended Asm**
 
-        ??? note "基本概念"
+        - **基本概念**
 
             - **Extended asm** 允许在 C 代码中嵌入汇编指令，并可读写 C 变量、使用 C 标签跳转。
             - 语法格式：
@@ -584,7 +575,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 
             - `asm` 是 GNU 扩展。若需兼容 `-ansi` 和 `-std`，应使用 `__asm__`。
 
-        ??? note "关键限定符"
+        - **关键限定符**
 
             - **volatile**
                 - 防止编译器优化掉 asm 语句或移动其位置。
@@ -594,7 +585,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
             - **goto**
                 - 允许从 asm 跳转到指定的 C 标签。
 
-        ??? note "参数类型"
+        - **参数类型**
 
             1. **AssemblerTemplate**
                 - 字符串模板，混合汇编指令和参数占位符（如 `%0`, `%1` 或符号名 `%[name]`）。
@@ -615,7 +606,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
             5. **GotoLabels**
                 - 汇编中可能跳转的 C 标签。禁止跨越 asm 语句跳转。
 
-        ??? note "常见用法示例"
+        - **常见用法示例**
 
             - **基本用法**：
 
@@ -646,7 +637,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
                     : "cc");
                 ```
 
-        ??? note "编译器与优化注意事项"
+        - **编译器与优化注意事项**
 
             - 若输出未使用，编译器可能删除 asm，需加 `volatile`。
             - 输入寄存器不可在 asm 内修改，除非与输出绑定。
@@ -654,15 +645,15 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
             - 寄存器分配避免 clobber 中的寄存器。
             - 输出约束 `+` 同时算输入和输出，影响 30 个操作数上限。
 
-        ??? note "性能与安全"
+        - **性能与安全**
 
             - 使用早期 clobber (`&`) 或绑定输出-输入避免寄存器冲突。
             - 谨慎使用 `memory`，会导致寄存器刷新，影响性能。
             - 避免直接修改栈指针寄存器。
 
-    ??? note "Specifying Registers for Local Variables"
+    - **Specifying Registers for Local Variables**
 
-        ??? note "基本概念"
+        - **基本概念**
 
             - 可以在函数内定义局部寄存器变量，并将其绑定到特定寄存器：
 
@@ -673,7 +664,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
             - `register` 关键字必需，不能与 `static` 一起使用。
             - 寄存器名称必须是目标平台上有效的寄存器名。
 
-        ??? note "限制与注意事项"
+        - **限制与注意事项**
 
             - **禁止使用 `const` 和 `volatile`**：
                 - `const` 可能导致编译器用初始值替换变量，使操作数分配到不同寄存器。
@@ -681,7 +672,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
             - 仅在调用 **Extended asm** 指定输入/输出寄存器时才支持此功能。
             - 建议选择在函数调用时 **自动保存和恢复** 的寄存器，以避免库函数调用破坏其值。
 
-        ??? note "用法示例"
+        - **用法示例**
 
             ```c
             register int *p1 asm("r0") = ...;
@@ -692,7 +683,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 
             - 上例中，`p1` 和 `p2` 的值在 `asm` 调用中绑定到 `r0` 和 `r1`。
 
-        ??? note "常见问题与解决"
+        - **常见问题与解决**
 
             - **寄存器可能被后续代码或库函数调用破坏**，包括算术运算时的临时调用。
             - 解决方法：对中间表达式使用临时变量，避免直接在寄存器变量初始化中做计算：
@@ -931,7 +922,23 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
         - 为什么这个寄存器的低两位可以分配给 MODE 字段？
         - 向量中断模式下，发生中断后 PC 会被设置成多少？
 
-- [3.1.14. Machine Exception Program Counter (mepc) Register](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_exception_program_counter_mepc_register) 和 [3.1.15. Machine Cause (mcause) Register](https://zju-os.github.io/doc/spec/riscv-privileged.html#mcause) 和 [3.1.16. Machine Trap Value (mtval) Register](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_trap_value_mtval_register)
+- [3.1.8. Machine Trap Delegation (**medeleg** and **mideleg**) Registers](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_trap_delegation_medeleg_and_mideleg_registers)
+
+    !!! question "考点"
+
+        - 为什么需要委派机制？
+        - medeleg 和 mideleg 寄存器的作用分别是什么？
+        - 当一个 trap 被委派到 S 模式后，下面这些地方的值会如何变化？
+            - scause
+            - stval
+            - sepc
+            - mstatus.SPP
+            - mstatus.SPIE
+            - mstatus.SIE
+        - 如果一个 trap 是在 M 模式下发生的，但它在 medeleg 中已被设置委派给 S 模式，会在哪里处理？
+        - mideleg 中的某一位被设置后，这个中断在 M 模式下会被触发吗？
+
+- [3.1.14. Machine Exception Program Counter (**mepc**) Register](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_exception_program_counter_mepc_register) 和 [3.1.15. Machine Cause (**mcause**) Register](https://zju-os.github.io/doc/spec/riscv-privileged.html#mcause) 和 [3.1.16. Machine Trap Value (**mtval**) Register](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_trap_value_mtval_register)
 
     !!! question "考点"
 
@@ -940,16 +947,32 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
         - mcause 寄存器中，中断和异常的区别是什么？
         - mtval 寄存器的作用是什么？什么时候它的值才有意义？
 
-总结一下，我们学习了 M 模式的几个关键 CSR 寄存器：`mstatus`、`mip`、`mie`、`mtvec`、`mepc`、`mcause` 和 `mtval`。S 模式也有几个对应的 CSR 寄存器：`sstatus`、`sip`、`sie`、`stvec`、`sepc`、`scause` 和 `stval`。它们的作用和 M 模式类似，请同学们在后续实验用到时自行阅读 [12.1. Supervisor CSRs](https://zju-os.github.io/doc/spec/riscv-privileged.html#_supervisor_csrs)。
+总结一下，我们学习了 M 模式的几个关键 CSR 寄存器：
+
+```text
+mstatus mip mie mtvec medeleg mideleg mepc mcause mtval
+```
+
+S 模式也有几个对应的 CSR 寄存器：
+
+```text
+sstatus sip sie stvec scause sepc stval
+```
+
+它们的作用和 M 模式类似，请同学们在后续实验用到时自行阅读 [12.1. Supervisor CSRs](https://zju-os.github.io/doc/spec/riscv-privileged.html#_supervisor_csrs)。
+
+!!! example "动手做"
+
+    断点打在内核第一条指令处，使用 QEMU Monitor 查看此时 CSR 寄存器的状态。解释本节学习的所有 M、S 模式 CSR 寄存器的值的含义。
 
 ### 特权指令
 
-然后，M 模式有几个特权指令。请阅读 [3.3.2. Trap-Return Instructions](spec/riscv-privileged.html#otherpriv)。
+然后，特权级有几个特权指令，现在我们只关注 xRET。请阅读 [3.3.2. Trap-Return Instructions](spec/riscv-privileged.html#otherpriv)。
 
 !!! question "考点"
 
     - xRET 指令的作用是什么？
-    - xRET 指令执行后，特权级和中断使能位会如何变化？PC 的值会如何变化？
+    - xRET 指令执行后，CSR 寄存器会如何变化？PC 的值会如何变化？
 
 ### Zicsr 扩展
 
@@ -978,16 +1001,25 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
             - C: Clear bits
             - WI/SI/CI: Immediate versions
 
-### Task3：中断处理
+### Task3：Trap Handler
+
+现在你已经全面了解了 RISC-V 的中断与异常机制以及 CSR 在其中扮演的重要角色。你的任务是：
 
 - 补全 `arch/riscv/include/sbi.h` 中的 `csr_read()` 和 `csr_write()` 函数。
 - 在 `start_kernel()` 中：
 
     - 读取 `sstatus`，打印其值
-    - 设置 `ssip`，触发一个软件中断
+    - 设置 `sip`，触发一个软件中断
 
 - 在 `head.S` 中，将 `stvec` 指向 `_trap`
-- 在 `entry.S` 中，补全 `_trap` 处理函数
+- 在 `entry.S` 中，补全 `_trap`
+
+请你思考以下问题，再补全 `_trap`：
+
+- Trap 随时可能发生。因此，Trap Handler 的首要工作是保存现场，并在完成 Trap 处理后恢复现场，保证程序的执行不受影响。为此，有哪些内容需要保存？保存到哪里？
+- `_trap` 的第二个作用是跳转到 `trap.c` 中的 `trap_handler()` 函数，因为 C 语言编程更方便，我们当然想用 C 语言完成具体的 Trap 处理工作。你需要向 `trap_handler()` 传递哪些参数？
+- 在 QEMU Monitor 中使用合适的命令打印 `mtvec` 指向的内存地址处存放的数据。这是 OpenSBI 的 Trap Handler，请你概述它做了什么？
+- `_trap` 非得用汇编写吗？直接指向 `trap_handler()` 可以吗？
 
 !!! success "完成条件"
 
@@ -1045,9 +1077,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
         - RV32 下，`timeh` 影射高 32 位，`time` 影射低 32 位
         - `mtime` 变化会最终反映在 `time`/`timeh`，但可能有延迟
 
-很可惜 `mtime` 和 `mtimecmp` 仅供 M 模式使用，让 OpenSBI 等 M 模式软件能够感知时间流逝。那我们的系统呢？第一时间想到 SBI 是否有提供相关服务。
-
-阅读 [SBI 手册](spec/riscv-sbi.pdf) 中的 Chapter 6. Timer Extension (EID #0x54494D45 "TIME")，了解如何使用 SBI 提供的定时器服务。
+很可惜 `mtime` 和 `mtimecmp` 仅供 M 模式使用，让 OpenSBI 等 M 模式软件能够感知时间流逝。那我们的 S 模式内核呢？首先想到 SBI 是否有提供相关服务。请你阅读 [SBI 手册](spec/riscv-sbi.pdf) 中的 Chapter 6. Timer Extension (EID #0x54494D45 "TIME")，了解如何使用 SBI 提供的定时器服务。
 
 !!! note "要点：SBI Timer Extension"
 
@@ -1096,34 +1126,22 @@ QEMU 已经支持 SSTC 扩展，因此你可以通过直接写 `csrw smtimecmp, 
     - 当平台支持 SSTC 扩展时，OpenSBI 会如何设置定时器？
     - 当平台不支持 SSTC 扩展时，OpenSBI 如何进行定时器多路复用？
 
+!!! info "更多资料"
+
+    - [riscv timer的基本逻辑 | Sherlock's blog](https://wangzhou.github.io/riscv-timer%E7%9A%84%E5%9F%BA%E6%9C%AC%E9%80%BB%E8%BE%91/)：对 RISC-V 规范、QEMU 和 Linux 内核的实现进行了整体分析。
+
 ### Task4：开启并处理 S 模式时钟中断
 
 - 在 `start_kernel()` 中，使用 `sbi_set_timer()` 将定时器设置为 `0`，这样会立刻触发一次时钟中断
-- 在 `trap_handler()` 中，添加对时钟中断的处理，打印对应的信息，并再次使用 `sbi_set_timer()` 设置下一次时钟中断（比如 `time() + 1000000`）
+- 在 `trap_handler()` 中，添加时钟中断的处理：
+    - 打印当前机器时间（秒）
+    - 使用 `sbi_set_timer()` 设置下一次时钟中断到一秒后
+
+关于时间：
+
+- `time` 的单位是时钟周期数，假设 CPU 频率为 10MHz，则每秒钟 `time` 增加 10,000,000
 
 !!! success "完成条件"
 
     - 成功看到控制台读秒输出。
     - 通过评测框架的 `lab1-task4` 测试。
-
-## 附录：中断异常委派
-
-本实验的阅读量已经非常大了，因此本附录不作要求。
-
-中断异常委派机制的目的类似 SSTC 扩展，都是为了提高特权级中断异常处理的性能。请你阅读 [3.1.8. Machine Trap Delegation (**medeleg** and **mideleg**) Registers](https://zju-os.github.io/doc/spec/riscv-privileged.html#_machine_trap_delegation_medeleg_and_mideleg_registers) ，了解中断异常委派机制。
-
-你可以思考以下问题：
-
-- 为什么需要委派机制？
-- medeleg 和 mideleg 寄存器的作用分别是什么？
-- 当一个 trap 被委派到 S 模式后，下面这些地方的值会如何变化？
-    - scause
-    - stval
-    - sepc
-    - mstatus.SPP
-    - mstatus.SPIE
-    - mstatus.SIE
-- 如果一个 trap 是在 M 模式下发生的，但它在 medeleg 中已被设置委派给 S 模式，会在哪里处理？
-- mideleg 中的某一位被设置后，这个中断在 M 模式下会被触发吗？
-
-OpenSBI 的输出中包含了 `medeleg` 和 `mideleg` 的值，你可以尝试分析一下它们的含义。
