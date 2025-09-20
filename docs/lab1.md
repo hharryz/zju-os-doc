@@ -1170,3 +1170,18 @@ QEMU 已经支持 SSTC 扩展，因此你可以通过直接写 `csrw smtimecmp, 
 !!! success "完成条件"
 
     - 通过评测框架的 `lab1-task4` 测试。
+
+!!! info "内核禁用浮点数"
+
+    也许你会问，上面的 `start_kernel()` 中为什么不用 `(double)(time_end - time_start) / CLOCKS_PER_SEC` 打印秒数呢？
+
+    事实上我们的 `printk()` 实现并不支持浮点数的输出（Linux 的也是）。如果要支持浮点数打印，就需要使用浮点数及其运算，然而这在内核是禁用的。原因有二：
+
+    - **没必要：**我们学到现在都没接触过 RISC-V 的整数乘除法（M 指令集），更别说浮点数了（F、D 指令集），可见浮点数的复杂性。内核完全可以摒弃这一复杂性，使用整数完成所有工作。
+    - **中断与异常：**现在我们的 Trap Handler 仅保存了 I 指令集的寄存器。如果使用浮点数，就需要保存 F 指令集的寄存器，增加了开销。此外，浮点数运算可能引发浮点异常（如无效操作、除零等），这些异常通过新的浮点 CSR（FCSR）来记录，并（在目前的 RISC-V 规范下）需要软件在每次浮点计算后进行处理。
+
+    对浮点数感兴趣的同学可以进一步阅读：
+
+    - [Floating-point API — The Linux Kernel documentation](https://docs.kernel.org/core-api/floating-point.html)
+    - [Use of floating point in the Linux kernel - Stack Overflow](https://stackoverflow.com/questions/13886338/use-of-floating-point-in-the-linux-kernel)
+    - [RISC-V 指令集架構介紹 - F Standard Extension | Jim's Dev Blog](https://tclin914.github.io/3d45634e/)
