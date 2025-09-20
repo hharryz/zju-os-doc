@@ -2,6 +2,24 @@
 
 本文档记录实验过程中同学们遇到的常见问题及解决办法，会频繁更新。如果你遇到问题，可以先来本文档找找是不是已经存在。
 
+## Lab1
+
+### Clangd 没有正确识别头文件
+
+- 现象：
+
+    VSCode 中 clangd 插件报错，提示找不到头文件。但你确定该头文件存在且路径正确。
+
+- 原因：
+
+    Clangd 依赖 `compile_commands.json` 来获取编译选项，从而正确解析编译依赖。请确保你已经运行 `make` 生成了 `compile_commands.json`。
+
+    如果你已经生成了 `compile_commands.json`，但 Clangd 仍然报错，可能是因为 VSCode Clangd 插件没有重建索引。你可以尝试重新加载 VSCode 窗口。
+
+- 解决办法：
+
+    按 ++ctrl+shift+p++，输入 `Reload`，点击 `Developer: Reload Window` 重新加载 VSCode 窗口。
+
 ## Lab 0
 
 ### 无法连接到 Docker 守护进程

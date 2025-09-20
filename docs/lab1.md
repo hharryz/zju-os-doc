@@ -24,7 +24,7 @@
 
 - 我们的下一个目标是为 Lab2 **线程调度**做准备：
 
-    操作系统是**事件驱动**的，意味着系统的执行流是由各种事件触发的，例如 I/O 完成、进程创建、用户输入等。时钟中断是其中最基础、最重要的事件源之一。**如果没有时钟中断，操作系统将无法感知时间的流逝，无法在合适的时机进行进程切换、调度、超时处理或实现延时等待。**通过周期性触发的时钟中断，**内核可以被动地转变为主动：不再依赖进程自愿交出 CPU，而是能在中断到来时打断当前执行流**，检查是否有更高优先级的任务或等待超时的事件需要处理，从而保证多任务系统的公平性和响应性。
+    我们在理论课上学习了操作系统是**事件驱动**的，意味着系统的执行流是由各种事件触发的，例如 I/O 完成、进程创建、用户输入等。时钟中断是其中最基础、最重要的事件源之一。**如果没有时钟中断，操作系统将无法感知时间的流逝，无法在合适的时机进行进程切换、调度、超时处理或实现延时等待。**通过周期性触发的时钟中断，**内核可以被动地转变为主动：不再依赖进程自愿交出 CPU，而是能在中断到来时打断当前执行流**，检查是否有更高优先级的任务或等待超时的事件需要处理，从而保证多任务系统的公平性和响应性。
 
     那么有如下问题：
 
@@ -82,7 +82,7 @@
     - 尝试修改 C 语言代码，你会发现 `sp` 的差值总是 16 的倍数，这是为什么？
     - 调用函数前后做了什么？
 
-??? note "要点"
+??? note "要点：RISC-V 调用约定"
 
     - **参数寄存器与返回值**
 
@@ -538,7 +538,7 @@ Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (
 - 我们在内核中开辟了一段栈空间
 - 汇编代码中可以引用链接脚本定义的符号
 
-你的任务是修改 `arch/riscv/head.S`，让 `start_kernel()` 函数能够成功执行。
+你的任务是修改 `arch/riscv/head.S`，使得能够成功进入 `start_kernel()` 函数，并进入到 `printk()` 函数。
 
 !!! success "完成条件"
 
@@ -554,7 +554,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 - [Extended Asm (Using the GNU Compiler Collection (GCC))](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html)
 - [Local Register Variables (Using the GNU Compiler Collection (GCC))](https://gcc.gnu.org/onlinedocs/gcc/Local-Register-Variables.html)
 
-??? note "要点"
+??? note "要点：C 内联汇编"
 
     - **Extended Asm**
 
@@ -792,6 +792,13 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 
 接下来让我们了解 CSR 寄存器。它们是 RISC-V CPU 中的一系列特殊寄存器，能够反映和控制 CPU 当前的状态和执行机制。我们先了解 M 模式的 CSR 寄存器：
 
+- [Chapter 2. Control and Status Registers (CSRs)](spec/riscv-privileged.html#priv-csrs) 的章节导言
+
+    !!! question "考点"
+
+        - 读取、修改、写入 CSR 的指令定义在哪个扩展？
+        - S 模式的 CSR 能被 M 模式访问吗？反之呢？
+
 - [3.1.6.1. Privilege and Global Interrupt-Enable Stack in **mstatus** register](https://zju-os.github.io/doc/spec/riscv-privileged.html#privstack)
 
     !!! question "考点"
@@ -942,10 +949,8 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
 
     !!! question "考点"
 
-        - mepc 寄存器的作用是什么？
-        - mcause 寄存器的作用是什么？
+        - mepc、mcause、mtval 寄存器的作用是什么？
         - mcause 寄存器中，中断和异常的区别是什么？
-        - mtval 寄存器的作用是什么？什么时候它的值才有意义？
 
 总结一下，我们学习了 M 模式的几个关键 CSR 寄存器：
 
@@ -965,6 +970,10 @@ sstatus sip sie stvec scause sepc stval
 
     断点打在内核第一条指令处，使用 QEMU Monitor 查看此时 CSR 寄存器的状态。解释本节学习的所有 M、S 模式 CSR 寄存器的值的含义。
 
+    移除你在 `head.S` 中设置的 `sp`，进行调试。你发现 `start_kernel()` 进入后发生了什么异常？接下来会发生什么？
+
+    （探究结束后记得把 `sp` 设置回来。）
+
 ### 特权指令
 
 然后，特权级有几个特权指令，现在我们只关注 xRET。请阅读 [3.3.2. Trap-Return Instructions](spec/riscv-privileged.html#otherpriv)。
@@ -977,13 +986,6 @@ sstatus sip sie stvec scause sepc stval
 ### Zicsr 扩展
 
 最后，我们将阅读 Zicsr 扩展，了解如何操控 CSR 寄存器。
-
-- 特权级手册 [Chapter 2. Control and Status Registers (CSRs)](spec/riscv-privileged.html#priv-csrs) 的章节导言
-
-    !!! question "考点"
-
-        - 读取、修改、写入 CSR 的指令定义在哪个扩展？
-        - S 模式的 CSR 能被 M 模式访问吗？反之呢？
 
 - 非特权级手册 [6. "Zicsr", Extension for Control and Status Register (CSR) Instructions, Version 2.0](spec/riscv-unprivileged.html#csrinsts)
 
@@ -1033,6 +1035,11 @@ sstatus sip sie stvec scause sepc stval
 阅读 [3.2.1. Machine Timer **(mtime and mtimecmp)** Registers](spec/riscv-privileged.html#_machine_timer_mtime_and_mtimecmp_registers)，了解 RISC-V 的时钟中断机制：
 
 !!! question "考点"
+
+    - mtime 和 mtimecmp 寄存器的作用分别是什么？
+    - mtime 记录的数值是 CPU 时钟周期吗？
+    - M 模式时钟中断挂起的条件是什么？
+    - 要让 CPU 响应 M 模式时钟中断，需要如何设置 CSR 寄存器？
 
 ??? note "要点"
 
@@ -1139,7 +1146,14 @@ QEMU 已经支持 SSTC 扩展，因此你可以通过直接写 `csrw smtimecmp, 
 
 关于时间：
 
-- `time` 的单位是时钟周期数，假设 CPU 频率为 10MHz，则每秒钟 `time` 增加 10,000,000
+- 对于 QEMU RISC-V virt 机器，`time` 的频率是 10MHz，OpenSBI 帮你通过设备接口查询了：
+
+    ```text
+    Platform Timer Device       : aclint-mtimer @ 10000000Hz
+    ```
+
+- `rdtime` 是一个伪指令，请自行查阅资料了解它的作用
+- 思考：经过多久时间 `time` 会回绕？
 
 !!! success "完成条件"
 
