@@ -62,6 +62,11 @@ git fetch upstream
 git merge upstream/lab1
 ```
 
+合并说明：
+
+- 新增 `kernel` 目录下的实验代码
+- 完善了环境支持
+
 ## Part 1：启动工作
 
 ### RISC-V 汇编与调用约定
@@ -819,7 +824,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
         - 从特权级 y 陷入到更高的特权级 x 时，xPIE、xIE 和 xPP 会如何变化？
         - xRET 指令返回时，特权级和中断使能位会如何恢复？xPP 会设置为什么？
 
-    ??? note "要点"
+    ??? note "要点：mstatus"
 
         1. **全局中断使能位 (Global Interrupt-Enable Bits)**
 
@@ -867,7 +872,7 @@ C++ 标准支持内联汇编，但 C 标准并不支持。GCC 提供了内联汇
         - 在什么条件下，中断会陷入 M 模式？
         - 为什么软件中断的优先级高于定时器中断？
 
-    ??? note "要点"
+    ??? note "要点：mip 和 mie"
 
         - **基本功能**
 
@@ -978,11 +983,11 @@ sstatus sip sie stvec scause sepc stval
 
 !!! example "动手做"
 
-    断点打在内核第一条指令处，使用 QEMU Monitor 查看此时 CSR 寄存器的状态。解释本节学习的所有 M、S 模式 CSR 寄存器的值的含义。
+    断点打在内核第一条指令处，使用 QEMU Monitor 查看此时 CSR 寄存器的状态。解释**本节学习的**所有 M、S 模式 CSR 寄存器的值的含义。你会发现有些 S 模式寄存器没有在 QEMU 中展示，这并不是一个 Bug，请查看 [RISC-V sstatus register is missing in qemu console / gdb (#1260) · Issue · qemu-project/qemu](https://gitlab.com/qemu-project/qemu/-/issues/1260) 了解原因。
 
     移除你在 `head.S` 中设置的 `sp`，进行调试。你发现 `start_kernel()` 进入后发生了什么异常？接下来会发生什么？
 
-    （探究结束后记得把 `sp` 设置回来。）
+    （探究结束后记得把 `sp` 设置回来）
 
 ### 特权指令
 
@@ -1020,8 +1025,9 @@ sstatus sip sie stvec scause sepc stval
 - 补全 `arch/riscv/include/sbi.h` 中的 `csr_read()` 和 `csr_write()` 函数。
 - 在 `start_kernel()` 中：
 
-    - 读取 `sstatus`，打印其值
-    - 设置 `sip`，触发一个软件中断
+    - 打印 `sstatus` 和 `sie` 的值
+    - 将 `sie` 设置为合适的值，使得只有软件中断被使能
+    - 将 `sip` 设置为合适的值，立刻触发一个软件中断
 
 - 在 `head.S` 中，将 `stvec` 指向 `_trap`
 - 在 `entry.S` 中，补全 `_trap`
@@ -1035,9 +1041,8 @@ sstatus sip sie stvec scause sepc stval
 
 !!! success "完成条件"
 
-    - 成功看到 `sstatus` 的值。
-    - 成功进入中断处理程序，打印对应的信息。
-    - 成功从中断程序退出，返回 `start_kernel()` 并继续执行，打印 `Hello, ZJU OS 2025!`。
+    - 成功进入中断处理程序，并且正确识别到软件中断。
+    - 成功从中断程序退出，返回 `start_kernel()` 并继续执行后续的输出。
     - 通过评测框架的 `lab1-task3` 测试。
 
 ### 时钟中断
@@ -1051,7 +1056,7 @@ sstatus sip sie stvec scause sepc stval
     - M 模式时钟中断挂起的条件是什么？
     - 要让 CPU 响应 M 模式时钟中断，需要如何设置 CSR 寄存器？
 
-??? note "要点"
+??? note "要点：mtime 和 mtimecmp"
 
     - **mtime 寄存器**
 
