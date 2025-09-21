@@ -208,11 +208,12 @@ make[1]: Leaving directory '/zju-os/linux-source-6.16'
 - `arch/<arch>/boot/Image`
 - `vmlinux`
 
+我们将在 Lab1 中了解这两个文件是什么，以及它们的异同。
+
 !!! question "考点"
 
     - 运行 `make help`，了解上面运行的 `defconfig`、`distclean` 等 target 的含义
     - 如何开启构建过程的详细输出？当构建失败时，你很可能需要查看详细的编译命令
-    - `Image` 和 `vmlinux` 是什么？有什么异同？
 
 !!! info "更多资料"
 
@@ -249,7 +250,7 @@ Welcome to Buildroot
 buildroot login:
 ```
 
-buildroot 默认用户为 `root`，密码为空。你可以登录 Shell，试试这个极简的 RISC-V 系统能干些什么（它应该能联网）：
+默认用户为 `root`，密码为空。你可以登录 Shell，试试这个极简的 RISC-V 系统能干些什么（它应该能联网）：
 
 ```console
 buildroot login: root
@@ -424,11 +425,10 @@ Domain0 Next Mode           : S-mode
 
 ### GDB 调试内核
 
-现在需要打开两个终端，一个运行 QEMU，另一个运行 GDB 进行调试。你可以：
+现在需要打开两个终端，一个运行 QEMU，另一个运行 GDB 进行调试。打开多个终端有很多方式，例如：
 
-- 按 [OS 实验导读#工具使用](intro.md#工具使用) 的说明使用 VSCode Attach 到容器内，开多个终端窗口
-- 在容器内使用 [tmux](https://github.com/tmux/tmux) 等终端复用工具。可参考 [Tmux 使用教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2019/10/tmux.html) 或 [Home · tmux/tmux Wiki](https://github.com/tmux/tmux/wiki)。
-- 在宿主机上打开两个终端窗口，均执行 `make` 进入容器。
+- 用 VSCode 打开多个终端
+- 在容器内使用 [tmux](https://github.com/tmux/tmux) 等终端复用工具。可参考 [Tmux 使用教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2019/10/tmux.html) 或 [Home · tmux/tmux Wiki](https://github.com/tmux/tmux/wiki)
 
 在其中一个终端运行 `make debug`，会看到 QEMU 命令执行后就停住了。在另一个终端运行 `make gdb`，GDB 自动连接到 QEMU 上，但因为什么命令都没执行，GDB 显示的内容全空：
 
