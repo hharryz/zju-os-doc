@@ -4,21 +4,19 @@
 
 ## Lab1
 
-### Clangd 没有正确识别头文件
+### Clangd 出现问题
 
 - 现象：
 
-    VSCode 中 clangd 插件报错，提示找不到头文件。但你确定该头文件存在且路径正确。
+    VSCode Clangd 插件报错，提示找不到头文件或语法解析错误等，但你确认该错误不应存在。
 
 - 原因：
 
-    Clangd 依赖 `compile_commands.json` 来获取编译选项，从而正确解析编译依赖。请确保你已经运行 `make` 生成了 `compile_commands.json`。
-
-    如果你已经生成了 `compile_commands.json`，但 Clangd 仍然报错，可能是因为 VSCode Clangd 插件没有重建索引。你可以尝试重新加载 VSCode 窗口。
+    这往往是因为 Clangd 没有重建索引。
 
 - 解决办法：
 
-    按 ++ctrl+shift+p++，输入 `Reload`，点击 `Developer: Reload Window` 重新加载 VSCode 窗口。
+    按 ++ctrl+shift+p++，输入 `clangd`，点击 `clangd: Restart language server` 重载语法解析器。
 
 ## Lab 0
 
