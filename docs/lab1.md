@@ -1020,13 +1020,16 @@ sstatus sip sie stvec scause sepc stval
 
 ### Task3：Trap Handler
 
-现在你已经全面了解了 RISC-V 的中断与异常机制以及 CSR 在其中扮演的重要角色。你的任务是：
+现在你已经全面了解了 RISC-V 的中断与异常机制以及 CSR 在其中扮演的重要角色。让我们用简单的 S 模式软件中断来实践这些知识。
 
-- 补全 `arch/riscv/include/sbi.h` 中的 `csr_read()` 和 `csr_write()` 函数。
+你的任务是：
+
+- 补全 `arch/riscv/include/sbi.h` 中的 `csr_*()` 宏函数。
 - 在 `start_kernel()` 中：
 
-    - 打印 `sstatus` 和 `sie` 的值
+    - 打印 `sstatus`、`sie` 和 `sip` 的值
     - 将 `sie` 设置为合适的值，使得只有软件中断被使能
+    - 将 `sstatus` 设置为合适的值，使能 S 模式中断
     - 将 `sip` 设置为合适的值，立刻触发一个软件中断
 
 - 在 `head.S` 中，将 `stvec` 指向 `_trap`
@@ -1170,7 +1173,10 @@ QEMU 已经支持 SSTC 扩展，因此你可以通过直接写 `csrw smtimecmp, 
 
 你的任务：
 
-- 在 `start_kernel()` 中，使用 `sbi_set_timer()` 将定时器设置为 `0`，这样会立刻触发一次时钟中断
+- 在 `start_kernel()` 中：
+
+    - 将 `sie` 设置为合适的值，使得时钟中断也被使能
+    - 使用 `sbi_set_timer()` 将定时器设置为 `0`，这样会立刻触发一次时钟中断
 
     因为没有重新设置 `stimecmp`，所以时钟中断会一直触发。你会看到控制台不停地打印。
 
