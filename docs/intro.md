@@ -87,24 +87,13 @@ git clone git@git.zju.edu.cn:os/code.git
 cd code
 ```
 
-并在助教通知仓库创建完成后使用下面的命令切换到自己的私有仓库：
+并在助教通知仓库创建完成、Lab1 发布后，克隆自己的私有仓库，不再使用发布仓库：
 
-```console
-$ git remote -v
-origin  git@git.zju.edu.cn:os/code.git (fetch)
-origin  git@git.zju.edu.cn:os/code.git (push)
-$ git remote rename origin upstream
-$ git remote add origin git@git.zju.edu.cn:os/2025/jijiangming/<你的学号>.git
-$ git fetch origin
-```
-
-然后，检查是否有分支仍然使用 `upstream` 作为上游。如果有，则将其上游改为 `origin`：
-
-```console
-$ git branch -vv
-* lab0      abc123 [upstream/lab0]  Work on lab0
-  main      def456 [origin/main] Update README
-$ git branch --set-upstream-to=origin/lab0 lab0
+```shell
+git clone git.zju.edu.cn:os/2025/jijiangming/os-<你的学号>.git
+cd os-<你的学号>
+git remote add upstream
+git fetch upstream
 ```
 
 实验过程将涉及 Git 的多分支开发等进阶用法，下图展示了完整的工作流和相应命令：
