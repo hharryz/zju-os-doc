@@ -1,29 +1,28 @@
 # 助教开发手册
 
-本课程的开发在 GitHub 上进行，ZJU Git 定期手工同步。
+本课程的开发在 ZJU Git 上进行，GitHub 定期手工同步。
 
 ## 仓库列表
 
-- （公开）实验代码发布仓库 [ZJU-OS/code](https://github.com/ZJU-OS/code)
+- （公开）实验代码发布仓库 [ZJU-OS/code](https://git.zju.edu.cn/os/code)
 
-    用于发布实验代码。设置了严格的分支保护、合并、推送策略，确保代码规范安全。
+    用于发布实验代码。
 
-- （公开）实验代码中转仓库 [ZJU-OS/code-transit](https://github.com/ZJU-OS/code-transit)
-
-    因为 GitHub 不支持 Public 仓库的 Private Fork，**为了走 PR 流程，确保参与的助教知道发布的代码发生了什么变更**，我们创建了一个中转仓库。助教需要将准备发布的代码推送到中转仓库，走 PR 流程后再合并到发布仓库。
-
-    比较让强迫症难受的一点是，GitHub Pull Request 不能同时支持下面两个要求：
-
-    - 不生成 Merge Commit
-    - 保留 Commit 的 Hash
-
-    在本地执行 `git merge` 时，如果可以 Fast-forward 则能同时满足上面两个要求（GitLab 倒是提供了选项支持 Fast-forward），这样比较优雅，能够保持[线性历史](https://stackoverflow.com/questions/20348629/what-are-the-advantages-of-keeping-linear-history-in-git)。但 GitHub 实际上执行的更像是 `git merge --no-ff`，见 [git - GitHub: Commit is changed after merge - Stack Overflow](https://stackoverflow.com/questions/52849531/github-commit-is-changed-after-merge)。
-
-    最后选择了使用 Merge 的方式合并 PR，虽然会产生一个多余的 Merge Commit 比较丑，但至少不会导致 Hash 变化，需要 Sync Fork 丢弃原始提交。
-
-- （私有）完整代码仓库 [ZJU-OS/code-private](https://github.com/ZJU-OS/code-private)
+- （私有）完整代码仓库 [ZJU-OS/code-private](https://git.zju.edu.cn/os/code-private)
 
     `main` 分支存放实现了所有实验功能的代码，持续进行整体代码的维护和改进。
+
+!!! tip "GitHub 的一些缺陷"
+
+    - GitHub 不支持 Public 仓库的 Private Fork，**而我们希望从私有仓库到代码发布能走 PR 流程，确保参与的助教知道发布的代码发生了什么变更**。
+    - GitHub Pull Request 不能同时支持下面两个要求：
+
+        - 不生成 Merge Commit
+        - 保留 Commit 的 Hash
+
+        这给多仓多分支开发造成了很多麻烦。在本地执行 `git merge` 时，如果可以 Fast-forward 则能同时满足上面两个要求，这样比较优雅，能够保持[线性历史](https://stackoverflow.com/questions/20348629/what-are-the-advantages-of-keeping-linear-history-in-git)。但 GitHub 实际上执行的更像是 `git merge --no-ff`，见 [git - GitHub: Commit is changed after merge - Stack Overflow](https://stackoverflow.com/questions/52849531/github-commit-is-changed-after-merge)。即使用 Merge 的方式合并 PR，也会产生一个多余的 Merge Commit，需要 Sync Fork。
+
+    GitLab 可以满足上面两个要求。
 
 ## 发布流程
 
@@ -36,7 +35,7 @@
     ```shell
     git clone git@github.com:/ZJU-OS/code-private.git
     cd code-private
-    git remote rename origin private
+    git remote rename origin code-private
     git checkout -b fa25-release-clean main
     # 挖空代码
     git commit -am "fa25: init"
@@ -45,19 +44,18 @@
     git push -u code-private fa25-release
     ```
 
-- 创建空的中转仓库和发布仓库，推送第一个基础分支 `lab0`（仅此时不需要走 PR）：
+- 创建空的发布仓库，推送第一个基础分支 `lab0`（仅此时不需要走 MR 流程）：
 
     ```shell
-    git remote add code-transit git@github.com:/ZJU-OS/code-transit.git
     git remote add code git@github.com:/ZJU-OS/code.git
-    git push code-transit lab0
+    git checkout -b lab0 fa25-release
     git push code lab0
     ```
 
-- `code-private/main` 进行其他开发工作
+- `main` 进行其他开发工作
 - 发布 `labN`：
-    - 以 `fa25-release` 为基础（此时已经发布了 `lab(N-1)`）,从 `private/main` 选择需要的代码进行合并，挖空不需要的代码，达到 `labN` 的进度
-    - 创建 `labN` 分支并推送到学生仓库
+    - 以 `fa25-release` 为基础（此时已经发布了 `lab(N-1)`）,从 `main` 选择需要的代码进行合并，挖空不需要的代码，达到 `labN` 的进度
+    - 创建 GitLab Merge Request 合并到学生仓库的 `labN` 分支
 
     ```shell
     git checkout fa25-release
@@ -70,15 +68,9 @@
     # 手工选择需要合并的文件，挖空学生完成的代码
     # 可以分多次提交，更加清晰地添加文件
     git commit -am "labN: release"
-    git checkout -b labN
-    git push upstream labN
+    # GitLab 上创建 Merge Request
+    # 从 code-private/fa25-release 合并到 code/labN
     ```
-
-如果今后参与开发的助教增多，为了防止代码不慎泄露，建议：
-
-- 大部分助教仅在 `private` 进行单仓库的开发、测试、合并到发布分支等任务
-- 推送到 `upstream` 的操作由专人执行
-- `upstream` 仓库设置分支保护策略，避免 `main` 分支被误推送到其中
 
 建议在 `.gitconfig` 中配置 `difftool`，方便用 VSCode 查看代码变更：
 
@@ -92,5 +84,7 @@
 配置后，可以用 `git difftool` 代替 `git diff` 查看代码变更：
 
 ```shell
-git difftool main -- # 比较当前分支和 main 分支的差异
+git difftool main --
 ```
+
+上面这行命令会对所有有差异的文件逐个打开 VSCode 的对比界面，可以利用 VSCode 的差异合并功能方便地处理变更。完成一对文件的对比后，关闭对应的 VSCode 窗格即可进入下一对文件的对比。
