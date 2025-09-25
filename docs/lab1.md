@@ -578,7 +578,18 @@ Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (
 
 !!! success "完成条件"
 
-    - GDB 断点打在 `printk()` 处，能够成功到达断点。
+    - GDB 断点打在 `printk()` 处，能{==成功==}进入 `printk()` 函数。这里{==成功==}的条件是：到达 `printk()` 断点时，`scause` 寄存器的值为 0，表明没有异常。
+
+        ```text
+        (gdb) b printk
+        Breakpoint 1 at ...
+        (gdb) c
+        Continuing.
+        Breakpoint 1, printk ...
+        (gdb) i r scause
+        scause        0x0    0
+        ```
+
     - 可以通过评测框架的 `lab1-task1` 测试。
 
 ### C 内联汇编
@@ -1006,9 +1017,9 @@ sstatus sip sie stvec scause sepc stval
 
     断点打在内核第一条指令处，使用 QEMU Monitor 查看此时 CSR 寄存器的状态。解释**本节学习的**所有 M、S 模式 CSR 寄存器的值的含义。你会发现有些 S 模式寄存器没有在 QEMU 中展示，这并不是一个 Bug，请查看 [RISC-V sstatus register is missing in qemu console / gdb (#1260) · Issue · qemu-project/qemu](https://gitlab.com/qemu-project/qemu/-/issues/1260) 了解原因。
 
-    移除你在 `head.S` 中设置的 `sp`，进行调试。你发现 `start_kernel()` 进入后发生了什么异常？接下来会发生什么？
+    移除你 Task1 做的工作，进行调试。你发现进入 `start_kernel()` 后发生了什么异常？接下来程序会如何执行？为什么仍能到达 `printk()`？
 
-    （探究结束后记得把 `sp` 设置回来）
+    （探究结束后记得 Task1 的工作还原回去）
 
 ### 特权指令
 
@@ -1053,7 +1064,7 @@ sstatus sip sie stvec scause sepc stval
     - 将 `sstatus` 设置为合适的值，使能 S 模式中断
     - 将 `sip` 设置为合适的值，立刻触发一个软件中断
 
-- 在 `head.S` 中，将 `stvec` 指向 `_trap`
+- 在 `head.S` 中，写入合适的 CSR 寄存器，将中断处理程序设置为 `_trap`
 - 在 `entry.S` 中，补全 `_trap`
 
 请你思考以下问题，再补全 `_trap`：
