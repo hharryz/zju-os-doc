@@ -17,17 +17,11 @@
 
 ## 实验要求
 
-本实验非常简单，无需写代码，无需提交报告。
-
-后续实验的文档会提供尽可能详细的指导，但你仍有很多问题需要回到原始文档、标准规范中仔细求证。**为了锻炼同学们阅读文档解决问题的能力，我们适当删减了本实验的指导，而是给出了一些原始文档链接，要求同学们寻找答案。**
+本实验非常简单，无需写代码，无需提交报告。**本次实验的重点是掌握 QEMU、GDB 等工具的使用，这对后续实验非常重要。**
 
 验收时，请你现场演示使用 QEMU 启动内核，并使用 GDB 打断点、查看各类信息。
 
 如果你有兴趣，请阅读 [附录 1：Spike 工具链](z1-spike.md)，在验收时展示使用 Spike 运行的结果。
-
-!!! question "考点"
-
-    本文档中标记为考点的方块是希望同学们能掌握的知识点，会在验收时提问。
 
 ## Part 1：环境配置
 
@@ -40,11 +34,11 @@
 
 ### 克隆代码仓库
 
-在 [OS 实验导读](intro.md) 中，你已经了解了 Git 工作流。现在执行第一步，克隆代码仓库。
+在 [OS 实验导读](intro.md) 中，你已经了解了 Git 工作流。现在将代码仓库克隆下来。
 
 !!! tip "WSL 用户请不要将代码存放在 Windows 目录下"
 
-    WSL 用户应该了解：Linux 和 Windows 的文件系统不同，文件权限、换行符、链接、大小写等方面都存在区别。
+    WSL 用户应该了解：**Linux 和 Windows 的文件系统不同，文件权限、换行符、链接、大小写等方面都存在区别。**
 
     WSL 将 Windows 目录挂载到了 `/mnt/c` 等路径下，这只是为文件互访提供便利。官方并不建议你将文件**存放**在一边，又在另一边**使用**。首先性能较低，其次代码仓库等对文件权限、链接等有要求的项目很容易出问题。
 
@@ -83,13 +77,13 @@
     - {==VSCode 打开实验仓库==}
     - 右下角可能会出现**开发容器（Dev Container）相关的弹窗**，点击在开发容器中打开
 
-        如果没有弹窗，则 ++ctrl+shift+p++，输入 `reopen` 找到 `Dev Containers: Reopen in Container` 选项，选择它
+        如果没有弹窗，则按 ++ctrl+shift+p++ 打开命令窗口，输入 `reopen` 找到 `Dev Containers: Reopen in Container` 选项，选择它
 
         !!! tip
 
             VSCode 是从当前打开的文件夹找 `.devcontainer` 的，所以请确保 VSCode 当前打开了实验仓库的根目录。
 
-            如果选择 `Reopen in Container` 后 VSCode 弹出了选择容器之类的窗口，说明你没有打开正确的目录。
+            如果选择 `Reopen in Container` 后 VSCode 弹出了选择容器之类的窗口，说明你没有打开正确的目录。请尝试关闭 VSCode 重新打开。
 
     - VSCode 将重载窗口，启动并连接到容器，自动完成插件安装等配置步骤
 
@@ -131,6 +125,10 @@
 
         将 Docker 命令封装为 Makefile 目标仅仅是为了让常用操作更简便，不用打一长串命令。建议你自行学习 Makefile 中的命令含义，以便日后遇到问题时知道该怎么做。
 
+!!! question "考点"
+
+    - 容器和镜像是什么关系？
+
 !!! info "更多资料"
 
     - 如果你不了解 Docker：[What is a Container? | Docker](https://www.docker.com/resources/what-container)
@@ -143,7 +141,7 @@
 
 ### 使用交叉编译工具链
 
-也许你接触过下列编译器工具：
+也许你接触过下列工具：
 
 ```text
 gcc gdb objdump readelf as ...
@@ -213,7 +211,7 @@ make[1]: Leaving directory '/zju-os/linux-source-6.16'
 !!! question "考点"
 
     - 运行 `make help`，了解上面运行的 `defconfig`、`distclean` 等 target 的含义
-    - 如何开启构建过程的详细输出？当构建失败时，你很可能需要查看详细的编译命令
+    - 当构建失败时，你很可能需要查看详细的编译命令。如何开启构建过程的详细输出？
 
 !!! info "更多资料"
 
@@ -230,7 +228,7 @@ make[1]: Leaving directory '/zju-os/linux-source-6.16'
     - 使用哪两个变量来指定目标架构？这两个变量的值在哪里找？
     - 如何在命令行中为 `make` 指定变量的值？
 
-请你使用交叉编译工具链编译 RISC-V 架构的内核。如果看到 `Kernel: arch/riscv/boot/Image is ready` 这一行，说明成功构建出了 RISC-V 架构的内核。使用 `file` 命令来验证它是否为 RISC-V 架构的内核：
+请你清理上一次构建的产物，然后使用交叉编译工具链编译 RISC-V 架构的内核。编译成功应当得到如上节所述的两个产物。你可以使用 `file` 命令来验证它是否为 RISC-V 架构的内核：
 
 ```console
 root@zju-os /z/linux-source-6.16# file arch/riscv/boot/Image

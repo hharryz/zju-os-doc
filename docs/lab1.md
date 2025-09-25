@@ -48,24 +48,43 @@
 
 - 验收：到场，讲解助教指定的代码，回答助教的提问。
 
-!!! tip
+## Part 0：环境配置
 
-    所有的实验内容都不需要记背 😂。那些技术细节并不重要，都写在标准里，知道要用的时候在哪看就可以了。关键在整体理解，这也是助教验收时的考察重点。
+### 更新代码
 
-## Part 0：合并代码
+助教已经为所有学生创建了私有仓库 `git@git.zju.edu.cn:os/fa25/jijiangming/os-<你的学号>.git`。你可以：
 
-现在你位于 `lab0` 分支。你需要创建 `lab1` 分支，合并上游的代码：
+- 克隆一个新的仓库
+- 或者趁机练习一下 Git 操作：
 
-```shell
-git checkout -b lab1
-git fetch upstream
-git merge upstream/lab1
-```
+    - 调整和更新上游：
+
+        ```shell
+        git remote rename origin upstream
+        git remote add origin git@git.zju.edu.cn:os/fa25/jijiangming/os-<你的学号>.git
+        git fetch --all
+        ```
+
+    - 现在你位于 `lab0` 分支。你需要创建 `lab1` 分支，合并上游的代码：
+
+        ```shell
+        git checkout -b lab1
+        git merge upstream/lab1
+        ```
 
 合并说明：
 
 - 新增 `kernel` 目录下的实验代码
-- 完善了环境支持
+- 完善了环境支持（compose 文件、devcontainer 配置等）
+
+### 更新镜像
+
+助教对镜像进行了一些重要更新。请运行 `docker images` 命令，确认你拉取的镜像 ID 正确：
+
+| 架构 | 镜像 ID |
+| ---- | ------- |
+| `x86_64` | `239f9b323061` |
+| `arm64` | `1f0f06c3b8b3` |
 
 ## Part 1：启动工作
 
