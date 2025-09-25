@@ -14,8 +14,9 @@ nav:
     - faq.md
     - lab0.md
     - lab1.md
-    - lab2.md
+    #- lab2.md
     - z1-spike.md
+    - z2-autograder.md
   - RISC-V 规范:
     - 特权级规范: spec/riscv-privileged.html
     - 非特权级规范: spec/riscv-unprivileged.html
