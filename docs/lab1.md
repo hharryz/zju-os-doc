@@ -555,7 +555,7 @@ Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (
     - `sp` 寄存器的值是多少？
     - 这属于哪个区域，该区域各个特权级的权限是什么？
 
-    用 VSCode 打开 `kernel/arch/riscv/kernel/Image`（已默认绑定到 Hex Editor 插件），查看它的内容。你会发现其中有一大块全是 0 的区域，这就是我们为 C 函数预留的栈空间。
+    用 VSCode 打开 `kernel/arch/riscv/boot/Image`（已默认绑定到 Hex Editor 插件），查看它的内容。你会发现其中有一大块全是 0 的区域，这就是我们为 C 函数预留的栈空间。
 
     - 这一部分的起始和结束位置是多少？在 `System.map` 中能找到对应的符号吗？（提示：`Image` 的起始位置是 `0x80200000`，记得加上这个偏移）
     - 这部分空间是如何开辟的？指出具体代码。
