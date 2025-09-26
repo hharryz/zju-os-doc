@@ -80,12 +80,9 @@
 
 ### 更新镜像
 
-助教对镜像进行了一些重要更新。请运行 `docker images` 命令，确认你拉取的镜像 ID 正确：
+助教对镜像进行了一些重要更新。最新的镜像 Digest 可以在 [Container registry · OS / Tool · GitLab](https://git.zju.edu.cn/os/tool/container_registry/15) 查看：
 
-| 架构 | 镜像 ID |
-| ---- | ------- |
-| `x86_64` | `47837666cce8` |
-| `arm64` | `a91ac34c9d68` |
+请运行 `docker images --digests` 命令，确认你拉取的镜像 Digest 与 ZJU Git Registry 上对应架构一致。
 
 如果不正确，则运行 `make update` 更新镜像。
 
