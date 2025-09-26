@@ -17,7 +17,7 @@
 
 接下来为同学们导读 RISC-V 架构规范、Linux 内核源码，介绍本课程使用 Git 管理源代码的规范。
 
-## 文档阅读
+## 文档导读
 
 OS 实验主要考察工程实践能力，核心要点是**按照 RISC-V 指令集规范，以 Linux 为参考**完成自己的操作系统内核。这需要你**具备阅读大型项目的英文文档和源代码，理解相关内容并动手实现**的能力。左侧导航栏中列出的参考手册和源码仓库将伴随你的整个实验过程。
 
@@ -33,7 +33,7 @@ OS 实验主要考察工程实践能力，核心要点是**按照 RISC-V 指令�
 
     需要你动手做的内容，要求完成并记录到实验报告中，也会在验收时提问。
 
-## RISC-V 架构规范
+### RISC-V 架构规范
 
 RISC-V 非特权级手册中的内容想必同学们已经在硬件课程中吃透了：
 
@@ -68,7 +68,7 @@ RISC-V 因其开源、模块化的特点，拥有丰富的扩展指令集。**�
 
 但笔记就像 Cache，虽然快但总会 Miss，**实验过程中一定要常看 RISC-V 标准**。
 
-## Linux 内核源码和课程仓库结构
+### Linux 内核源码和课程仓库结构
 
 详见 [Linux source code layout — The Linux Kernel documentation](https://linux-kernel-labs.github.io/refs/heads/master/lectures/intro.html#linux-source-code-layout)。你可以打开左侧的 Linux 源码链接，边读边看。
 
@@ -80,7 +80,9 @@ RISC-V 因其开源、模块化的特点，拥有丰富的扩展指令集。**�
 
 其中 [`arch/riscv`](https://github.com/torvalds/linux/tree/master/arch/riscv) 目录最为重要，课程实验大部分的代码工作都将发生在这里。
 
-## 使用 Git 管理源代码
+## 工具使用
+
+### Git
 
 为了方便助教查看同学们的代码修改、实现自动化评测，本教学班统一使用 [ZJU Git](https://git.zju.edu.cn/) 进行代码管理。同学们需要使用指定的仓库提交代码、通过评测。对于未使用过 ZJU Git 的同学，请前往[登录界面](https://git.zju.edu.cn/users/sign_in)创建账号。同时 [ZJU Git 101](https://www.pages.zjusct.io/git101/) 提供了一些使用帮助。
 
@@ -102,7 +104,7 @@ cd code
 并在助教通知仓库创建完成、Lab1 发布后，克隆自己的私有仓库，不再使用发布仓库：
 
 ```shell
-git clone git@git.zju.edu.cn:os/2025/jijiangming/os-<你的学号>.git
+git clone git@git.zju.edu.cn:os/fa25/jijiangming/os-<你的学号>.git
 cd os-<你的学号>
 git remote add upstream
 git fetch upstream
@@ -145,9 +147,11 @@ git commit
 
     - Pro Git 是一本优秀的 Git 教程：英文版 [Git](https://git-scm.com/book/en/)、中文版 [Pro Git 中文版（第二版）](https://www.progit.cn/)
 
-## 工具使用
+### Docker
 
-VSCode 自带的 IntelliSense 解析时容易受到系统头文件的影响，产生一堆报错，在内核编程等特殊场景下表现不佳。我们推荐使用如下工具：
+### 语法解析
+
+VSCode 自带的 C/C++ 插件 IntelliSense 解析时容易受到系统头文件的影响，产生一堆报错，在内核编程等特殊场景下表现不佳。我们推荐使用如下工具：
 
 - [clangd](https://clangd.llvm.org/)：一个基于 LLVM 的 C/C++ 语言服务器，提供智能补全、语法检查等功能。它直接使用编译命令生成的编译数据库 `compile_commands.json`，能准确地解析代码关联。
 - [bear](https://github.com/rizsotto/Bear)：一个生成 `compile_commands.json` 的工具，能将 Makefile 生成的编译命令转换为 JSON 格式，供 clangd 使用。
