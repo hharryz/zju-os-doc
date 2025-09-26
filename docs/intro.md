@@ -102,7 +102,7 @@ cd code
 并在助教通知仓库创建完成、Lab1 发布后，克隆自己的私有仓库，不再使用发布仓库：
 
 ```shell
-git clone git.zju.edu.cn:os/2025/jijiangming/os-<你的学号>.git
+git clone git@git.zju.edu.cn:os/2025/jijiangming/os-<你的学号>.git
 cd os-<你的学号>
 git remote add upstream
 git fetch upstream
