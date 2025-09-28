@@ -1057,7 +1057,10 @@ sstatus sip sie stvec scause sepc stval
 
 你的任务是：
 
-- 补全 `arch/riscv/include/sbi.h` 中的 `csr_*()` 宏函数。
+- 补全 `arch/riscv/include/sbi.h` 中的 `csr_*()` **宏函数**。
+
+    宏函数的语法应该在大一的 C 语言课程中学习过，如果你忘记了，可以阅读 [Replacing text macros - cppreference.com](https://en.cppreference.com/w/c/preprocessor/replace.html)。
+
 - 在 `start_kernel()` 中：
 
     - 打印 `sstatus`、`sie` 和 `sip` 的值
