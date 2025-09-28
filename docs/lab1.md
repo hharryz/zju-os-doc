@@ -36,20 +36,21 @@
 
 ## 实验要求
 
-- 代码：完成所有任务，提交到 Git 仓库并通过测试。
-
-    - 提交代码前，请运行 `make format` 格式化代码。
-
-- 报告：提交 PDF 到学在浙大。内容包含：
-
-    - 各 Task 的实现思路与过程。
-    - 「动手做」部分的实验过程和问题解答。
-    - 你的实现亮点（如有）。
-    - 心得与吐槽（如有）。
-
-- 验收：到场，讲解助教指定的代码，回答助教的提问。
+见 [首页#要求和评分标准](index.md#要求和评分标准)
 
 ## Part 0：环境配置
+
+### Linux 内核源码和课程仓库结构
+
+详见 [Linux source code layout — The Linux Kernel documentation](https://linux-kernel-labs.github.io/refs/heads/master/lectures/intro.html#linux-source-code-layout)。你可以打开左侧的 Linux 源码链接，边读边看。
+
+课程仓库目录的组织结构与 Linux 源码保持一致。
+
+- `arch`：特定架构的代码，实现启动、异常处理等核心功能，都受到指令集架构的约束
+- `arch/riscv/kernel/head.S`：内核最开始执行的代码
+- `lib`：内核无法使用标准库，`printk` 等辅助函数实现在这里
+
+其中 [`arch/riscv`](https://github.com/torvalds/linux/tree/master/arch/riscv) 目录最为重要，课程实验大部分的代码工作都将发生在这里。
 
 ### 更新代码
 

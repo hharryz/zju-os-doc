@@ -1,10 +1,8 @@
 # Lab 0: Linux 内核调试
 
-!!! tip "请先阅读 [OS 实验导读](intro.md)"
+!!! danger "DDL"
 
-!!! danger "代码、报告提交 DDL"
-
-    （仅验收）暂定第三周(2025-09-30)
+    - 验收：2025-09-30
 
 ## 实验简介
 
@@ -24,6 +22,10 @@
 如果你有兴趣，请阅读 [附录 1：Spike 工具链](z1-spike.md)，在验收时展示使用 Spike 运行的结果。
 
 ## Part 1：环境配置
+
+### 拉取代码
+
+TODO
 
 ### 安装 Docker
 
@@ -388,7 +390,25 @@ Domain0 Next Mode           : S-mode
     - QEMU RISC-V 启动实现：[qemu/hw/riscv/boot.c at master · qemu/qemu](https://github.com/qemu/qemu/blob/master/hw/riscv/boot.c)
     - OpenSBI 详解：[OpenSBI Deep Dive - RISC-V International](https://riscv.org/wp-content/uploads/2024/12/13.30-RISCV_OpenSBI_Deep_Dive_v5.pdf)
 
-### RISC-V 执行环境
+### RISC-V 规范导读
+
+现在同学们知道 QEMU 和 OpenSBI 在启动过程中的角色，接下来一起读一读 RISC-V 规范。
+
+RISC-V **非特权级**规范中的内容想必同学们已经在硬件课程中吃透了：
+
+- Chapter 2. RV32I Base Integer Instruction Set
+- Chapter 3. RV32E and RV64E Base Integer Instruction Sets
+- Chapter 4. RV64I Base Integer Instruction Set
+- Chapter 6. "Zicsr", Extension for Control and Status Register
+ (CSR) Instructions
+
+   Zicsr 扩展主要用于操作特权级寄存器，但**在非特权级也有用法**，因此没有放置在特权级手册中。我们将在 Lab1 学习该扩展。
+
+翻开 RISC-V **特权级**手册，开篇介绍的 RISC-V Privileged Software Stack 正是本课程要实现的内容。请注意下图中**你的OS**在什么位置：
+
+![riscv-stack.drawio](lab0.assets/riscv-stack.drawio)
+
+图中白色方框是具体实现，黑色方框是抽象接口。只要符合接口规范，各个组件就能协同工作，组成完整的系统。本课程实现的 OS 向下对接 RISC-V 指令集和 SBI 规范，向上对接 Linux 风格的 ABI 和系统调用接口。
 
 请打开 RISC-V 非特权级手册，阅读：
 
