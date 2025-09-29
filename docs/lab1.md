@@ -1070,6 +1070,7 @@ sstatus sip sie stvec scause sepc stval
 
 - 在 `head.S` 中，写入合适的 CSR 寄存器，将中断处理程序设置为 `_trap`
 - 在 `entry.S` 中，补全 `_trap`
+- 在 `trap.c` 中，完成软件中断的处理
 
 请你思考以下问题，再补全 `_trap`：
 
