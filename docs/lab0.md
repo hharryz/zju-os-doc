@@ -23,10 +23,6 @@
 
 ## Part 1：环境配置
 
-### 拉取代码
-
-TODO
-
 ### 安装 Docker
 
 如果你尚未安装 Docker：
@@ -34,17 +30,14 @@ TODO
 - Linux 和 WSL 环境请参考 [Docker CE | ZJU Mirror](https://mirrors.zju.edu.cn/docs/docker-ce/)
 - macOS 推荐使用 [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) 或 [OrbStack](https://orbstack.dev/download) (可以用 [Homebrew](https://formulae.brew.sh/formula/docker) 直接安装)
 
-### 克隆代码仓库
+### 拉取代码
 
-在 [OS 实验导读](intro.md) 中，你已经了解了 Git 工作流。现在将代码仓库克隆下来。
+请确保你已经阅读 [附录2：工具使用](z2-manual.md) ，并了解基本的 Git 工作流，现在请你将代码仓库克隆下来。助教已经为所有学生创建了私有仓库，你可以从 ZJU Git 直接拉取自己的私有仓库 `git@git.zju.edu.cn:os/fa25/jijiangming/os-<你的学号>.git`。请注意你所在的分支应为 `lab0`，如果不是，请尝试通过如下操作进行切换：
 
-!!! tip "WSL 用户请不要将代码存放在 Windows 目录下"
-
-    WSL 用户应该了解：**Linux 和 Windows 的文件系统不同，文件权限、换行符、链接、大小写等方面都存在区别。**
-
-    WSL 将 Windows 目录挂载到了 `/mnt/c` 等路径下，这只是为文件互访提供便利。官方并不建议你将文件**存放**在一边，又在另一边**使用**。首先性能较低，其次代码仓库等对文件权限、链接等有要求的项目很容易出问题。
-
-    请 WSL 用户将代码仓库克隆到 WSL 的 Linux 文件系统中（比如 `/home/<username>/` 下），以避免出现各种奇怪的问题。
+```shell
+git fetch origin
+git checkout -b lab0 origin/lab0
+```
 
 ### 启动开发容器
 
