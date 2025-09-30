@@ -83,7 +83,7 @@
 
 助教对镜像进行了一些重要更新。最新的镜像 Digest 可以在 [Container registry · OS / Tool · GitLab](https://git.zju.edu.cn/os/tool/container_registry/15) 查看。
 
-请运行 `docker images --digests` 命令，确认你拉取的镜像 Digest 与 ZJU Git Registry 上对应架构一致。
+请运行 `docker images --digests` 命令，确认你拉取的镜像 Digest 与 ZJU Git Registry 上的 `latest` **或**对应架构的 Digest 一致。
 
 如果不正确，则运行 `make update` 更新镜像。
 
@@ -552,7 +552,7 @@ Domain0 Region07            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (
 
         - `sp` 寄存器的值是多少？
         - 这属于哪个区域，该区域各个特权级的权限是什么？
-    
+
     2. 用 VSCode 打开 `kernel/arch/riscv/boot/Image`（已默认绑定到 Hex Editor 插件），然后拉到最底下，观察 Hex Editor 左侧显示的文件偏移地址，它的大小是多少？接下来，请你对照 `vmlinux.lds` 和 `System.map`，查看起始和末尾符号（`_skernel` 和 `_ebss`）对应的地址之差是多少？（在这里，我们暂时不考虑 `_ekernel`，因此存在内存对齐的因素）
 
         请你思考：为什么 `Image` 文件的大小会**小于**链接脚本中定义的内核大小？在上面，我们已经知道 `Image` 文件的内存布局和运行时是一致的，理论上它应当符合链接脚本和符号表中的定义。（提示：你需要理解链接脚本中各个段存放的数据类型）
@@ -1070,6 +1070,7 @@ sstatus sip sie stvec scause sepc stval
 
 - 在 `head.S` 中，写入合适的 CSR 寄存器，将中断处理程序设置为 `_trap`
 - 在 `entry.S` 中，补全 `_trap`
+- 在 `trap.c` 中，完成软件中断的处理
 
 请你思考以下问题，再补全 `_trap`：
 
